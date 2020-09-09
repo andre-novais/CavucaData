@@ -40,7 +40,7 @@ if (isProduction) {
   mongoose.set("debug", true);
 }
 
-//require("./models/Article");
+require("./models/DataSet");
 
 app.use(require("./routes"));
 
@@ -82,7 +82,14 @@ app.use(function (err, req, res, next) {
   });
 });
 
-// finally, let's start our server...
+let mock_dataset = require("./models/mock_dataset");
+
+let DataSet = mongoose.model("DataSet");
+
+let dataset = new DataSet(mock_dataset);
+
+dataset.save();
+
 var server = app.listen(process.env.PORT || 3000, function () {
   console.log("Listening on port " + server.address().port);
 });
