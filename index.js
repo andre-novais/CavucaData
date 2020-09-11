@@ -82,13 +82,13 @@ app.use(function (err, req, res, next) {
   });
 });
 
-let mock_dataset = require("./models/mock_dataset");
-
-let DataSet = mongoose.model("DataSet");
-
-let dataset = new DataSet(mock_dataset);
-
-dataset.save();
+//let mock_dataset = require("./models/mock_dataset");
+//
+//let DataSet = mongoose.model("DataSet");
+//
+//let dataset = new DataSet(mock_dataset);
+//
+//dataset.save();
 
 var server = app.listen(process.env.PORT || 3000, function () {
   console.log("Listening on port " + server.address().port);
