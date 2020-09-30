@@ -7,7 +7,7 @@ var http = require("http"),
   errorhandler = require("errorhandler"),
   mongoose = require("mongoose"),
   morgan = require("morgan"),
-  fs = require("fs");
+  fsm = require("fs");
 
 var isProduction = process.env.NODE_ENV === "production";
 
@@ -24,9 +24,12 @@ app.use(require("method-override")());
 app.use(express.static(__dirname + "/public"));
 
 //log to file
-var accessLogStream = fs.createWriteStream(path.join(__dirname, "access.log"), {
-  flags: "a",
-});
+var accessLogStream = fsm.createWriteStream(
+  path.join(__dirname, "access.log"),
+  {
+    flags: "a",
+  }
+);
 app.use(morgan("dev", { stream: accessLogStream }));
 
 if (!isProduction) {
@@ -40,13 +43,13 @@ if (isProduction) {
   mongoose.set("debug", true);
 }
 
-require("./models/DataSet");
+require("./models/DataSetSchema");
 
 app.use(require("./routes"));
 
 /// catch 404 and forward to error handler
 app.use(function (req, res, next) {
-  var err = new Error("Not Found");
+  var err: any = new Error("Not Found");
   err.status = 404;
   next(err);
 });

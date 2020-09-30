@@ -16,7 +16,7 @@ exports.config = {
   // NPM script (see https://docs.npmjs.com/cli/run-script) then the current working
   // directory is where your package.json resides, so `wdio` will be called from there.
   //
-  specs: ["./scrapper/home_page.js"],
+  specs: ["./scrapper/runner.js"],
   // Patterns to exclude.
   exclude: [
     // 'path/to/excluded/files'
@@ -56,6 +56,14 @@ exports.config = {
       // it is possible to configure which logTypes to include/exclude.
       // excludeDriverLogs: ['*'], // pass '*' to exclude all driver session logs
       // excludeDriverLogs: ['bugreport', 'server'],
+      "goog:chromeOptions": {
+        args: [
+          "--headless",
+          "user-agent=...",
+          "--disable-gpu",
+          "--window-size=1440,735",
+        ],
+      },
     },
   ],
   //
@@ -65,7 +73,7 @@ exports.config = {
   // Define all options that are relevant for the WebdriverIO instance here
   //
   // Level of logging verbosity: trace | debug | info | warn | error | silent
-  logLevel: "info",
+  logLevel: "error",
   //
   // Set specific log levels per logger
   // loggers:
@@ -131,7 +139,7 @@ exports.config = {
   // See the full list at http://mochajs.org/
   mochaOpts: {
     ui: "bdd",
-    timeout: 60000,
+    timeout: 6000000,
   },
   //
   // =====

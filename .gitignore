@@ -104,4 +104,8 @@ dist
 .tern-port
 
 #ignoring all js files
-*.js
+**.js
+
+#ignoring debug scrapper files
+append.json
+append.txt

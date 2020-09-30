@@ -1,6 +1,6 @@
-var mongoose = require("mongoose");
-var uniqueValidator = require("mongoose-unique-validator");
-var slug = require("slug");
+import mongoose = require("mongoose");
+import uniqueValidator = require("mongoose-unique-validator");
+import slug = require("slug");
 
 var DataSetSchema = new mongoose.Schema(
   {
