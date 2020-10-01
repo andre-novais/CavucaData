@@ -4,8 +4,8 @@ class CkanListing {
   _dataSetPage: any;
 
   constructor(config: object, DataSetPage: any) {
-    this._baseUrl = config["base_url"];
-    this._root_link_href = config["root_link_href"];
+    this._baseUrl = config['base_url'];
+    this._root_link_href = config['root_link_href'];
     this._dataSetPage = new DataSetPage(config);
   }
   get rootBtn() {
@@ -13,8 +13,8 @@ class CkanListing {
   }
   get dataSetLinks() {
     let links: string[] = [];
-    $$(".dataset-heading > a").forEach((elem) => {
-      links.push(elem.getAttribute("innerText"));
+    $$('.dataset-heading > a').forEach(elem => {
+      links.push(elem.getAttribute('innerText'));
     });
     return links;
   }
@@ -37,7 +37,7 @@ class CkanListing {
     this.rootBtn.waitForClickable();
   }
 
-  scrappe = function* (this: CkanListing) {
+  scrappe = function*(this: CkanListing) {
     let completed: boolean;
     let links: string[];
     this.enter();

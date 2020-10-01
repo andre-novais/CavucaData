@@ -3,8 +3,8 @@ class CkanDataSet {
   _groupsBtn: string;
 
   constructor(config: object) {
-    this._root_link_href = config["root_link_href"];
-    this._groupsBtn = config["groupsBtn"];
+    this._root_link_href = config['root_link_href'];
+    this._groupsBtn = config['groupsBtn'];
   }
 
   get rootBtn() {
@@ -12,28 +12,31 @@ class CkanDataSet {
   }
 
   get name() {
-    return $(".primary")
-      .$("<article>")
-      .$("<div>")
-      .$("<h1>")
-      .getAttribute("innerText")
+    return $('.primary')
+      .$('<article>')
+      .$('<div>')
+      .$('<h1>')
+      .getAttribute('innerText')
       .trim();
   }
 
   get description() {
-    const hasDescription = $(".notes").isExisting();
+    const hasDescription = $('.notes').isExisting();
     if (hasDescription) {
-      return $(".notes").$("p").getAttribute("innerText").trim();
+      return $('.notes')
+        .$('p')
+        .getAttribute('innerText')
+        .trim();
     }
     return null;
   }
 
   get organization() {
-    return $("aside.secondary")
-      .$("<div>")
-      .$(".module-content")
-      .$(".heading")
-      .getAttribute("innerText")
+    return $('aside.secondary')
+      .$('<div>')
+      .$('.module-content')
+      .$('.heading')
+      .getAttribute('innerText')
       .trim();
   }
 
@@ -41,21 +44,21 @@ class CkanDataSet {
     $("//a[contains(@href,'/dataset/groups/')]").click();
     this.waitForLoad();
 
-    const dataSetHasGroups = !$(".empty").isExisting();
-    const groupsBugPresent = !$(".primary")
-      .$("<article>")
-      .$("<div>")
-      .$("<form>")
+    const dataSetHasGroups = !$('.empty').isExisting();
+    const groupsBugPresent = !$('.primary')
+      .$('<article>')
+      .$('<div>')
+      .$('<form>')
       .isExisting();
 
     if (!groupsBugPresent && dataSetHasGroups) {
-      let dataSetGroups = $(".primary")
-        .$("<article>")
-        .$("<div>")
-        .$("<form>")
-        .$("<ul>")
-        .$$("li > h3")
-        .map((elem) => elem.getAttribute("innerText").trim());
+      let dataSetGroups = $('.primary')
+        .$('<article>')
+        .$('<div>')
+        .$('<form>')
+        .$('<ul>')
+        .$$('li > h3')
+        .map(elem => elem.getAttribute('innerText').trim());
       browser.back();
       this.waitForLoad();
       return dataSetGroups;
@@ -69,29 +72,29 @@ class CkanDataSet {
   }
 
   get tags() {
-    const dataSetHasTags = $(".tag-list").isExisting();
+    const dataSetHasTags = $('.tag-list').isExisting();
     if (!dataSetHasTags) return null;
     let dataSetTags: string[] = [];
-    $(".tag-list")
-      .$$("li > a")
-      .forEach((elem) => {
-        dataSetTags.push(elem.getAttribute("innerText").trim());
+    $('.tag-list')
+      .$$('li > a')
+      .forEach(elem => {
+        dataSetTags.push(elem.getAttribute('innerText').trim());
       });
     return dataSetTags;
   }
 
   get aditionalInfo() {
     let aditionalInfo = {};
-    $(".additional-info > table > tbody")
-      .$$("tr")
-      .forEach((elem) => {
+    $('.additional-info > table > tbody')
+      .$$('tr')
+      .forEach(elem => {
         const itemName = elem
-          .$(".dataset-label")
-          .getAttribute("innerText")
+          .$('.dataset-label')
+          .getAttribute('innerText')
           .trim();
         const itemValue = elem
-          .$(".dataset-details")
-          .getAttribute("innerText")
+          .$('.dataset-details')
+          .getAttribute('innerText')
           .trim();
         aditionalInfo[itemName] = itemValue;
       });
@@ -100,10 +103,10 @@ class CkanDataSet {
 
   get resources() {
     let resources = {};
-    $(".resources")
-      .$(".resource-list")
-      .$$(".resource-item")
-      .forEach((elem) => {
+    $('.resources')
+      .$('.resource-list')
+      .$$('.resource-item')
+      .forEach(elem => {
         let resource = this.getResourceData(elem);
         resources[resource.name] = resource;
       });
@@ -115,25 +118,31 @@ class CkanDataSet {
   }
 
   getResourceName(elem: WebdriverIO.Element) {
-    return elem.$(".heading").getAttribute("title").trim();
+    return elem
+      .$('.heading')
+      .getAttribute('title')
+      .trim();
   }
 
   getResourceDescription(elem: WebdriverIO.Element) {
-    return elem.$(".description").getAttribute("innerText").trim();
+    return elem
+      .$('.description')
+      .getAttribute('innerText')
+      .trim();
   }
 
   getResourceUrl(elem: WebdriverIO.Element) {
     const resourceUrlBugPresent = !elem
-      .$(".dropdown")
-      .$(".dropdown-menu")
-      .$("li > .resource-url-analytics")
+      .$('.dropdown')
+      .$('.dropdown-menu')
+      .$('li > .resource-url-analytics')
       .isExisting();
     if (!resourceUrlBugPresent) {
       return elem
-        .$(".dropdown")
-        .$(".dropdown-menu")
-        .$("li > .resource-url-analytics")
-        .getAttribute("href");
+        .$('.dropdown')
+        .$('.dropdown-menu')
+        .$('li > .resource-url-analytics')
+        .getAttribute('href');
     }
     return null;
   }
@@ -158,7 +167,7 @@ class CkanDataSet {
   }
 
   getDataSet() {
-    const authBugPresent = !$(".secondary").isExisting();
+    const authBugPresent = !$('.secondary').isExisting();
     if (!authBugPresent) {
       this.waitForLoad();
       let dataSet = {
