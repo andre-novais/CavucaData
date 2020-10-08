@@ -7,16 +7,17 @@ import { InjectModel } from '@nestjs/mongoose';
 export class DatasetsService {
   constructor(@InjectModel('datasets') private Dataset: Model<Dataset>) {}
 
-  createOrUpdateDataset(dataset: Dataset | null): Promise<Dataset | null> {
+  async createOrUpdateDataset(
+    dataset: Dataset | null,
+  ): Promise<Dataset | null> {
     if (!dataset) return Promise.resolve(null);
-    let datasetPromise = this.findByUniqueName(dataset.unique_name);
 
-    return datasetPromise.then(persistedDataset => {
-      if (persistedDataset) {
-        return this.updateDataset(dataset, persistedDataset);
-      }
-      return this.createDataset(dataset);
-    });
+    let persistedDataset = await this.findByUniqueName(dataset.unique_name);
+
+    if (persistedDataset) {
+      return this.updateDataset(dataset, persistedDataset);
+    }
+    return this.createDataset(dataset);
   }
 
   findById(id: number) {
