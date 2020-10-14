@@ -9,36 +9,33 @@ class CkanDataSet {
 
   async getDataset() {
     await this.waitForLoad();
-    const authBugPresentElem = await this.browser.$('.secondary').catch((err) => null);
-    const authBugPresent = !authBugPresentElem;
-    if (!authBugPresent) {
-      await this.waitForLoad();
-      const name = await this.name();
-      const dataSet = {
-        name: name,
-        description: await this.description(),
-        organization: await this.organization(),
-        tags: await this.tags(),
-        aditionalInfo: await this.aditionalInfo(),
-        resources: await this.resources(),
-        source_url: await this.sourceUrl(),
-        groups: await this.groups(),
-        unique_name: this.site_name + name,
-        site_name: this.site_name
-      };
-      await this.browser.back();
-      return dataSet;
-    } else {
+
+    const authBugPresent = !(await this.browser.$('.secondary').catch((err) => null));
+    if (authBugPresent) {
       await this.browser.back();
       return null;
     }
+
+    await this.waitForLoad();
+    const name = await this.name();
+    const dataSet = {
+      name: name,
+      description: await this.description(),
+      organization: await this.organization(),
+      tags: await this.tags(),
+      aditionalInfo: await this.aditionalInfo(),
+      resources: await this.resources(),
+      source_url: await this.sourceUrl(),
+      groups: await this.groups(),
+      unique_name: this.uniqueName(name),
+      site_name: this.site_name
+    };
+
+    await this.browser.back();
+    return dataSet;
   }
 
-  async rootBtn() {
-    return await this.browser.$("//a[contains(@href,'/dataset/groups/')]").catch((err) => null);
-  }
-
-  async name() {
+  private async name() {
     const nameElem = await (
       await (await (await this.browser.$('div.primary')).$('<article>')).$('<div>')
     ).$('<h1>');
@@ -46,46 +43,49 @@ class CkanDataSet {
     return text.trim().replace(/ /gi, '_');
   }
 
-  async description() {
-    const hasDescriptionElem = await this.browser.$('.notes');
-    const hasDescription = await hasDescriptionElem.isExisting();
-    if (hasDescription) {
-      const descriptionElem = await this.browser.$('.notes > p');
-      const text = await descriptionElem.getText();
-      return text.trim();
+  private async description() {
+    const descriptionElem = await this.browser.$('.notes > p');
+    const hasDescription = await descriptionElem.isExisting();
+    if (!hasDescription) {
+      return null;
     }
-    return null;
+
+    const description = (await descriptionElem.getText()).trim();
+    return description;
   }
 
-  async organization() {
+  private async organization() {
     const organizationElem = await (
-      await (await (await this.browser.$('aside.secondary')).$('<div>')).$('.module-content')
+      await (await (await this.browser.$('aside.secondary')).$('div.module-narrow')).$('.module-content')
     ).$('.heading');
-    return (await organizationElem.getText()).trim();
+
+    const organization = (await organizationElem.getText()).trim();
+    return organization;
   }
 
-  async tags() {
+  private async tags() {
     const dataSetHasTagsElem = await this.browser.$('.tag-list');
     const dataSetHasTags = await dataSetHasTagsElem.isExisting();
 
     if (!dataSetHasTags) return null;
 
     const dataSetTags: string[] = [];
-    const tagsFatherElem = await this.browser.$('.tag-list');
-    const tagsChildren = await tagsFatherElem.$$('li > a');
-    for (const tag of tagsChildren) {
+    const tagList = await this.browser.$('.tag-list');
+    const tags = await tagList.$$('li > a');
+    for (const tag of tags) {
       dataSetTags.push((await tag.getText()).trim());
     }
 
     return dataSetTags;
   }
 
-  async aditionalInfo() {
+  private async aditionalInfo() {
     const aditionalInfo = {};
     const aditionalInfoTable = await (
       await (await this.browser.$('.additional-info')).$('<table>')
     ).$('<tbody>');
     const aditionalInfoTableRows = await aditionalInfoTable.$$('tr');
+
     for (const row of aditionalInfoTableRows) {
       const itemNameElem = await row.$('.dataset-label');
       const itemName = (await itemNameElem.getText()).trim();
@@ -93,13 +93,15 @@ class CkanDataSet {
       const itemValue = (await itemValueElem.getText()).trim();
       aditionalInfo[itemName] = itemValue;
     }
+
     return aditionalInfo;
   }
 
-  async resources() {
+  private async resources() {
     const resources = {};
-    let counter = 0
+    let counter = 0;
     const resourceListItems = await this.browser.$$('.resource-item');
+
     for (const item of resourceListItems) {
       const resource = await this.getResourceData(item);
       resources[`resource${++counter}`] = resource;
@@ -108,9 +110,55 @@ class CkanDataSet {
     return resources;
   }
 
-  async groups() {
+  private async getResourceData(elem: WebdriverIO.Element) {
+    const name = await this.getResourceName(elem).catch(() => null);
+    const description = await this.getResourceDescription(elem).catch(() => null);
+    const url = await this.getResourceUrl(elem).catch(() => null);
+    const type =await this.getResourceType(elem)
+
+    const resource = {
+      name: name,
+      description: description,
+      url: url,
+      type: type
+    };
+
+    return resource;
+  }
+
+  private async getResourceName(elem: WebdriverIO.Element) {
+    const headingElem = await elem.$('.heading');
+    const title = await headingElem.getAttribute('title');
+
+    return title.trim();
+  }
+
+  private async getResourceDescription(elem: WebdriverIO.Element) {
+    const descriptionElem = await elem.$('.description');
+    const text = await descriptionElem.getText();
+
+    return text.trim();
+  }
+
+  private async getResourceUrl(elem: WebdriverIO.Element) {
+    const resourceUrlElem = await elem.$('.resource-url-analytics');
+    const resourceUrlBugPresent = !(await resourceUrlElem.isExisting());
+    if (resourceUrlBugPresent) {
+      return null;
+    }
+
+    return resourceUrlElem!.getAttribute('href');
+  }
+
+  private async getResourceType(elem: WebdriverIO.Element) {
+    const resourceTypeElem = await elem.$('.format-label')
+
+    return resourceTypeElem.getAttribute('data-format')
+  }
+
+  private async groups() {
     const groupsElem = await this.browser.$("//a[contains(@href,'/dataset/groups/')]");
-    groupsElem.click();
+    await groupsElem.click();
     await this.waitForLoad();
 
     const dataSetHasGroups = !(await (await this.browser.$('.empty')).isExisting());
@@ -130,62 +178,31 @@ class CkanDataSet {
     }
 
     const dataSetGroupsChildren = await datasetGroups.$$('li > h3');
-    const dataSetGroups: String[] = []
+    const dataSetGroups: String[] = [];
     for (const elem of dataSetGroupsChildren) {
-      const group = (await elem.getText()).trim()
-      dataSetGroups.push(group)
+      const group = (await elem.getText()).trim();
+      dataSetGroups.push(group);
     }
+
     this.browser.back();
     await this.waitForLoad();
     return dataSetGroups;
   }
 
-  async sourceUrl() {
+  private async sourceUrl() {
     return this.browser.getUrl();
   }
 
-  async getResourceData(elem: WebdriverIO.Element) {
-    const name = await this.getResourceName(elem).catch(() => null);
-    const description = await this.getResourceDescription(elem).catch(() => null);
-    const url = await this.getResourceUrl(elem).catch(() => null);
-    const typeMatch = url ? url.match(/\.(?!.*\.)([a-z]*)/) : null;
-    const type = typeMatch ? typeMatch[0] : null;
-
-    const resource = {
-      name: name,
-      description: description,
-      url: url,
-      type: type
-    };
-
-    return resource;
-  }
-
-  async getResourceName(elem: WebdriverIO.Element) {
-    const headingElem = await elem.$('.heading');
-    const title = await headingElem.getAttribute('title');
-
-    return title.trim();
-  }
-
-  async getResourceDescription(elem: WebdriverIO.Element) {
-    const descriptionElem = await elem.$('.description');
-    const text = await descriptionElem.getText();
-
-    return text.trim();
-  }
-
-  async getResourceUrl(elem: WebdriverIO.Element) {
-    const resourceUrlElem = await elem.$('.resource-url-analytics');
-    const resourceUrlBugPresent = !(await resourceUrlElem.isExisting());
-
-    if (!resourceUrlBugPresent) {
-      return resourceUrlElem!.getAttribute('href');
+  private uniqueName(name: String) {
+    let displayName = name
+    if (displayName.length > 77){
+      displayName = displayName.substring(0, 77) + '...'
     }
-    return null;
+
+    return this.site_name + displayName
   }
 
-  async waitForLoad() {
+  private async waitForLoad() {
     await this.browser.waitUntil(async () => {
       if (await this.rootBtn()) {
         return true;
@@ -193,8 +210,13 @@ class CkanDataSet {
         return false;
       }
     });
-    const rootBtnElem = await this.rootBtn();
-    rootBtnElem!.waitForClickable();
+
+    const rootBtn = await this.rootBtn();
+    rootBtn!.waitForClickable();
+  }
+
+  private async rootBtn() {
+    return await this.browser.$("//a[contains(@href,'/dataset/groups/')]").catch((err) => null);
   }
 }
 

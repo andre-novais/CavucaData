@@ -7,21 +7,20 @@ import { DatasetsService } from '../datasets/datasets.service';
 
 @Injectable()
 export class ScrapperService {
-  constructor(
-    private readonly datasetsService: DatasetsService
-  ) {}
+  constructor(private readonly datasetsService: DatasetsService) {}
 
   call() {
     const wdio = new Launcher(`./dist/scrapper/config/wdio.conf.js`, {});
     wdio.run();
   }
 
-  async tesr() {
-    this.rewq().catch((err) => null);
+  async startScrapping() {
+    this.scrappe().catch((err) => null);
+    //this.datasetsService.clearDb()
     return 'title';
   }
 
-  async rewq() {
+  async scrappe() {
     for (const [_key, config] of Object.entries(siteMetaData)) {
       const pageModelFactory = new PageModelFactory(config);
       const page = await pageModelFactory.create_page();
@@ -33,8 +32,8 @@ export class ScrapperService {
         const persistedDataset = await this.datasetsService.findByUniqueName(uniqueName);
         if (!persistedDataset) {
           const dataset = await page.listingPage.getDataset(name);
-          const res = await this.datasetsService.createDataset(dataset)
-          log(res)
+          const res = await this.datasetsService.createDataset(dataset);
+          log(res);
         }
       }
     }

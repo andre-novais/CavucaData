@@ -15,7 +15,7 @@ export interface Dataset extends Document {
   sourceUrl: string;
   groups: string[] | [];
   unique_name: string;
-  site_name: String
+  site_name: String;
 }
 
 export const DatasetSchema = new Schema({

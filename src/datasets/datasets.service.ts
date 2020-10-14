@@ -23,9 +23,12 @@ export class DatasetsService {
   }
 
   createDataset(dataset: Dataset): Promise<Dataset> {
-    return new this.Dataset(dataset).save().then(data => data).catch(err => {
-      return err
-    });
+    return new this.Dataset(dataset)
+      .save()
+      .then((data) => data)
+      .catch((err) => {
+        return err;
+      });
   }
 
   clearDb() {

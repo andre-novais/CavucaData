@@ -13,33 +13,40 @@ class CkanListing {
 
   scrappe = async function* (this: CkanListing) {
     let completed: boolean;
-    //let names: string[];
 
     await this.enter();
     while (true) {
       const nextPageBtn = await this.nextPageBtn();
       completed = await !nextPageBtn.isExisting();
+
       const names = await this.dataSetNames();
       for (const name of names) {
-        //const data = await this.getDataset(name);
-        //yield data;
         yield name;
       }
+
       if (completed) break;
-      nextPageBtn.click();
+
+      await nextPageBtn.click();
       await this.waitForLoad();
     }
   };
 
   async getDataset(name: string) {
+    await this.browser.debug()
     const dataset = await this.browser.$(`*=${name}`);
-    dataset.click();
+    await dataset.click();
     return await this._dataSetPage.getDataset();
   }
 
-  private async rootBtn() {
-    return await this.browser.$(`//a[@href='${this._root_link_href}']`);
+  private async enter() {
+    await this.browser.url(this._baseUrl);
+    await this.waitForLoad();
   }
+
+  private async nextPageBtn() {
+    return this.browser.$(`*=»`);
+  }
+
   private async dataSetNames() {
     const names: string[] = [];
     const namesElems = await this.browser.$$('.dataset-heading > a');
@@ -50,18 +57,13 @@ class CkanListing {
     return names;
   }
 
-  private async nextPageBtn() {
-    return this.browser.$(`*=»`);
-  }
-
-  private async enter() {
-    await this.browser.url(this._baseUrl);
-    await this.waitForLoad();
-  }
-
   private async waitForLoad() {
     const rootBtn = await this.rootBtn();
     rootBtn.waitForClickable();
+  }
+
+  private async rootBtn() {
+    return await this.browser.$(`//a[@href='${this._root_link_href}']`);
   }
 }
 
