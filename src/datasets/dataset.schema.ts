@@ -4,7 +4,6 @@ export interface Dataset extends Document {
   name: string;
   description: string;
   organization: string;
-  group: string[] | [];
   tags: string[] | [];
   aditionalInfo: object | null;
   resources: {
@@ -14,20 +13,36 @@ export interface Dataset extends Document {
     type: string;
   }[];
   sourceUrl: string;
+  groups: string[] | [];
   unique_name: string;
+  site_name: String
 }
 
 export const DatasetSchema = new Schema({
-  name: String,
-  description: String,
+  name: {
+    type: String,
+    required: true
+  },
+  description: {
+    type: String,
+    required: true
+  },
   organization: String,
-  group: [String],
   tags: [String],
   aditionalInfo: Schema.Types.Mixed,
-  resources: [Object],
+  resources: {
+    type: [Object],
+    required: true
+  },
   sourceUrl: String,
+  groups: [String],
   unique_name: {
     type: String,
     unique: true,
+    required: true
   },
+  site_name: {
+    type: String,
+    required: true
+  }
 });

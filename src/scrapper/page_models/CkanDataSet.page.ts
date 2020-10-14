@@ -1,191 +1,200 @@
 class CkanDataSet {
-  _root_link_href: string;
-  _groupsBtn: string;
+  private site_name: string;
+  private browser: WebdriverIO.BrowserObject;
 
-  constructor(config: object) {
-    this._root_link_href = config['root_link_href'];
-    this._groupsBtn = config['groupsBtn'];
+  constructor(config: object, browser) {
+    this.site_name = config['site_name'];
+    this.browser = browser;
   }
 
-  get rootBtn() {
-    return $(`//a[@href='${this._root_link_href}']`);
+  async getDataset() {
+    await this.waitForLoad();
+    const authBugPresentElem = await this.browser.$('.secondary').catch((err) => null);
+    const authBugPresent = !authBugPresentElem;
+    if (!authBugPresent) {
+      await this.waitForLoad();
+      const name = await this.name();
+      const dataSet = {
+        name: name,
+        description: await this.description(),
+        organization: await this.organization(),
+        tags: await this.tags(),
+        aditionalInfo: await this.aditionalInfo(),
+        resources: await this.resources(),
+        source_url: await this.sourceUrl(),
+        groups: await this.groups(),
+        unique_name: this.site_name + name,
+        site_name: this.site_name
+      };
+      await this.browser.back();
+      return dataSet;
+    } else {
+      await this.browser.back();
+      return null;
+    }
   }
 
-  get name() {
-    return $('.primary')
-      .$('<article>')
-      .$('<div>')
-      .$('<h1>')
-      .getAttribute('innerText')
-      .trim();
+  async rootBtn() {
+    return await this.browser.$("//a[contains(@href,'/dataset/groups/')]").catch((err) => null);
   }
 
-  get description() {
-    const hasDescription = $('.notes').isExisting();
+  async name() {
+    const nameElem = await (
+      await (await (await this.browser.$('div.primary')).$('<article>')).$('<div>')
+    ).$('<h1>');
+    const text = await nameElem.getText();
+    return text.trim().replace(/ /gi, '_');
+  }
+
+  async description() {
+    const hasDescriptionElem = await this.browser.$('.notes');
+    const hasDescription = await hasDescriptionElem.isExisting();
     if (hasDescription) {
-      return $('.notes')
-        .$('p')
-        .getAttribute('innerText')
-        .trim();
+      const descriptionElem = await this.browser.$('.notes > p');
+      const text = await descriptionElem.getText();
+      return text.trim();
     }
     return null;
   }
 
-  get organization() {
-    return $('aside.secondary')
-      .$('<div>')
-      .$('.module-content')
-      .$('.heading')
-      .getAttribute('innerText')
-      .trim();
+  async organization() {
+    const organizationElem = await (
+      await (await (await this.browser.$('aside.secondary')).$('<div>')).$('.module-content')
+    ).$('.heading');
+    return (await organizationElem.getText()).trim();
   }
 
-  get groups() {
-    $("//a[contains(@href,'/dataset/groups/')]").click();
-    this.waitForLoad();
+  async tags() {
+    const dataSetHasTagsElem = await this.browser.$('.tag-list');
+    const dataSetHasTags = await dataSetHasTagsElem.isExisting();
 
-    const dataSetHasGroups = !$('.empty').isExisting();
-    const groupsBugPresent = !$('.primary')
-      .$('<article>')
-      .$('<div>')
-      .$('<form>')
-      .isExisting();
-
-    if (!groupsBugPresent && dataSetHasGroups) {
-      let dataSetGroups = $('.primary')
-        .$('<article>')
-        .$('<div>')
-        .$('<form>')
-        .$('<ul>')
-        .$$('li > h3')
-        .map(elem => elem.getAttribute('innerText').trim());
-      browser.back();
-      this.waitForLoad();
-      return dataSetGroups;
-    } else if (!dataSetHasGroups) {
-      browser.back();
-      this.waitForLoad();
-      return null;
-    } else {
-      return null;
-    }
-  }
-
-  get tags() {
-    const dataSetHasTags = $('.tag-list').isExisting();
     if (!dataSetHasTags) return null;
-    let dataSetTags: string[] = [];
-    $('.tag-list')
-      .$$('li > a')
-      .forEach(elem => {
-        dataSetTags.push(elem.getAttribute('innerText').trim());
-      });
+
+    const dataSetTags: string[] = [];
+    const tagsFatherElem = await this.browser.$('.tag-list');
+    const tagsChildren = await tagsFatherElem.$$('li > a');
+    for (const tag of tagsChildren) {
+      dataSetTags.push((await tag.getText()).trim());
+    }
+
     return dataSetTags;
   }
 
-  get aditionalInfo() {
-    let aditionalInfo = {};
-    $('.additional-info > table > tbody')
-      .$$('tr')
-      .forEach(elem => {
-        const itemName = elem
-          .$('.dataset-label')
-          .getAttribute('innerText')
-          .trim();
-        const itemValue = elem
-          .$('.dataset-details')
-          .getAttribute('innerText')
-          .trim();
-        aditionalInfo[itemName] = itemValue;
-      });
+  async aditionalInfo() {
+    const aditionalInfo = {};
+    const aditionalInfoTable = await (
+      await (await this.browser.$('.additional-info')).$('<table>')
+    ).$('<tbody>');
+    const aditionalInfoTableRows = await aditionalInfoTable.$$('tr');
+    for (const row of aditionalInfoTableRows) {
+      const itemNameElem = await row.$('.dataset-label');
+      const itemName = (await itemNameElem.getText()).trim();
+      const itemValueElem = await row.$('.dataset-details');
+      const itemValue = (await itemValueElem.getText()).trim();
+      aditionalInfo[itemName] = itemValue;
+    }
     return aditionalInfo;
   }
 
-  get resources() {
-    let resources = {};
-    $('.resources')
-      .$('.resource-list')
-      .$$('.resource-item')
-      .forEach(elem => {
-        let resource = this.getResourceData(elem);
-        resources[resource.name] = resource;
-      });
+  async resources() {
+    const resources = {};
+    let counter = 0
+    const resourceListItems = await this.browser.$$('.resource-item');
+    for (const item of resourceListItems) {
+      const resource = await this.getResourceData(item);
+      resources[`resource${++counter}`] = resource;
+    }
+
     return resources;
   }
 
-  get sourceUrl() {
-    return browser.getUrl();
+  async groups() {
+    const groupsElem = await this.browser.$("//a[contains(@href,'/dataset/groups/')]");
+    groupsElem.click();
+    await this.waitForLoad();
+
+    const dataSetHasGroups = !(await (await this.browser.$('.empty')).isExisting());
+    if (!dataSetHasGroups) {
+      await this.browser.back();
+      await this.waitForLoad();
+      return null;
+    }
+
+    const datasetGroups = await (
+      await (await (await (await this.browser.$('.primary')).$('<article>')).$('<div>')).$('<form>')
+    ).$('<ul>');
+
+    const groupsBugPresent = !(await datasetGroups.isExisting());
+    if (groupsBugPresent) {
+      return null;
+    }
+
+    const dataSetGroupsChildren = await datasetGroups.$$('li > h3');
+    const dataSetGroups: String[] = []
+    for (const elem of dataSetGroupsChildren) {
+      const group = (await elem.getText()).trim()
+      dataSetGroups.push(group)
+    }
+    this.browser.back();
+    await this.waitForLoad();
+    return dataSetGroups;
   }
 
-  getResourceName(elem: WebdriverIO.Element) {
-    return elem
-      .$('.heading')
-      .getAttribute('title')
-      .trim();
+  async sourceUrl() {
+    return this.browser.getUrl();
   }
 
-  getResourceDescription(elem: WebdriverIO.Element) {
-    return elem
-      .$('.description')
-      .getAttribute('innerText')
-      .trim();
+  async getResourceData(elem: WebdriverIO.Element) {
+    const name = await this.getResourceName(elem).catch(() => null);
+    const description = await this.getResourceDescription(elem).catch(() => null);
+    const url = await this.getResourceUrl(elem).catch(() => null);
+    const typeMatch = url ? url.match(/\.(?!.*\.)([a-z]*)/) : null;
+    const type = typeMatch ? typeMatch[0] : null;
+
+    const resource = {
+      name: name,
+      description: description,
+      url: url,
+      type: type
+    };
+
+    return resource;
   }
 
-  getResourceUrl(elem: WebdriverIO.Element) {
-    const resourceUrlBugPresent = !elem
-      .$('.dropdown')
-      .$('.dropdown-menu')
-      .$('li > .resource-url-analytics')
-      .isExisting();
+  async getResourceName(elem: WebdriverIO.Element) {
+    const headingElem = await elem.$('.heading');
+    const title = await headingElem.getAttribute('title');
+
+    return title.trim();
+  }
+
+  async getResourceDescription(elem: WebdriverIO.Element) {
+    const descriptionElem = await elem.$('.description');
+    const text = await descriptionElem.getText();
+
+    return text.trim();
+  }
+
+  async getResourceUrl(elem: WebdriverIO.Element) {
+    const resourceUrlElem = await elem.$('.resource-url-analytics');
+    const resourceUrlBugPresent = !(await resourceUrlElem.isExisting());
+
     if (!resourceUrlBugPresent) {
-      return elem
-        .$('.dropdown')
-        .$('.dropdown-menu')
-        .$('li > .resource-url-analytics')
-        .getAttribute('href');
+      return resourceUrlElem!.getAttribute('href');
     }
     return null;
   }
 
-  waitForLoad() {
-    this.rootBtn.waitForClickable();
-  }
-
-  getResourceData(elem: WebdriverIO.Element) {
-    let name = this.getResourceName(elem);
-    let description = this.getResourceDescription(elem);
-    let url = this.getResourceUrl(elem);
-    let typeMatch = url ? url.match(/\.(?!.*\.)([a-z]*)/) : null;
-    let type = typeMatch ? typeMatch[0] : null;
-    let resource = {
-      name: name,
-      description: description,
-      url: url,
-      type: type,
-    };
-    return resource;
-  }
-
-  getDataSet() {
-    const authBugPresent = !$('.secondary').isExisting();
-    if (!authBugPresent) {
-      this.waitForLoad();
-      let dataSet = {
-        name: this.name,
-        description: this.description,
-        organization: this.organization,
-        group: this.groups,
-        tags: this.tags,
-        aditionalInfo: this.aditionalInfo,
-        resources: this.resources,
-        source_url: this.sourceUrl,
-      };
-      browser.back();
-      return dataSet;
-    } else {
-      browser.back();
-      return null;
-    }
+  async waitForLoad() {
+    await this.browser.waitUntil(async () => {
+      if (await this.rootBtn()) {
+        return true;
+      } else {
+        return false;
+      }
+    });
+    const rootBtnElem = await this.rootBtn();
+    rootBtnElem!.waitForClickable();
   }
 }
 

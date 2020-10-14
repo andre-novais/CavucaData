@@ -12,14 +12,11 @@ describe('DatasetsService', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         MongooseModule.forRoot('mongodb://localhost/test', {
-          connectionName: 'datasets',
+          connectionName: 'datasets'
         }),
-        MongooseModule.forFeature(
-          [{ name: 'datasets', schema: DatasetSchema }],
-          'datasets',
-        ),
+        MongooseModule.forFeature([{ name: 'datasets', schema: DatasetSchema }], 'datasets')
       ],
-      providers: [DatasetsService],
+      providers: [DatasetsService]
     }).compile();
 
     service = module.get<DatasetsService>(DatasetsService);
@@ -27,7 +24,7 @@ describe('DatasetsService', () => {
     jest.useFakeTimers();
   });
 
-  afterEach(done => {
+  afterEach((done) => {
     service.clearDb();
     done();
   });
@@ -38,19 +35,17 @@ describe('DatasetsService', () => {
 
   describe('createOrUpdateDataset', () => {
     it('should refuse null a object', async () => {
-      let result = await service.createOrUpdateDataset(null).then(result => {
+      let result = await service.createOrUpdateDataset(null).then((result) => {
         return result;
       });
       expect(result).toBeFalsy();
     });
 
     it('should create unexisting dataset', async () => {
-      let datasetId = await service
-        .createOrUpdateDataset(datasetMock)
-        .then(dataset => {
-          return dataset!.id;
-        });
-      let savedDataset = await service.findById(datasetId).then(dataset => {
+      let datasetId = await service.createOrUpdateDataset(datasetMock).then((dataset) => {
+        return dataset!.id;
+      });
+      let savedDataset = await service.findById(datasetId).then((dataset) => {
         return dataset!;
       });
 
@@ -58,17 +53,15 @@ describe('DatasetsService', () => {
     });
 
     it('should update existing dataset', async () => {
-      let datasetId = await service
-        .createOrUpdateDataset(datasetMock)
-        .then(dataset => {
-          return dataset!.id;
-        });
+      let datasetId = await service.createOrUpdateDataset(datasetMock).then((dataset) => {
+        return dataset!.id;
+      });
 
       let alteredDatasetMock = _.cloneDeep(datasetMock);
       alteredDatasetMock['description'] = 'new description';
       await service.createOrUpdateDataset(alteredDatasetMock);
 
-      let updatedDataset = await service.findById(datasetId).then(dataset => {
+      let updatedDataset = await service.findById(datasetId).then((dataset) => {
         return dataset!;
       });
 

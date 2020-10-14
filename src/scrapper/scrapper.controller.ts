@@ -1,4 +1,4 @@
-import { Controller, Post } from '@nestjs/common';
+import { Controller, Get, Post } from '@nestjs/common';
 import { ScrapperService } from './scrapper.service';
 
 @Controller('scrapper')
@@ -9,5 +9,10 @@ export class ScrapperController {
   Scrappe() {
     this.scrapperService.call();
     return 'scrapping process initialized';
+  }
+
+  @Get()
+  test() {
+    return this.scrapperService.tesr();
   }
 }

@@ -7,49 +7,46 @@ import { InjectModel } from '@nestjs/mongoose';
 export class DatasetsService {
   constructor(@InjectModel('datasets') private Dataset: Model<Dataset>) {}
 
-  async createOrUpdateDataset(
-    dataset: Dataset | null,
-  ): Promise<Dataset | null> {
+  async createOrUpdateDataset(dataset: Dataset | null): Promise<Dataset | null> {
     if (!dataset) return Promise.resolve(null);
 
-    let persistedDataset = await this.findByUniqueName(dataset.unique_name);
+    const persistedDataset = await this.findByUniqueName(dataset.unique_name);
 
     if (persistedDataset) {
       return this.updateDataset(dataset, persistedDataset);
     }
-    return this.createDataset(dataset);
+    return await this.createDataset(dataset);
   }
 
   findById(id: number) {
     return this.Dataset.findById(id).exec();
   }
 
+  createDataset(dataset: Dataset): Promise<Dataset> {
+    return new this.Dataset(dataset).save().then(data => data).catch(err => {
+      return err
+    });
+  }
+
   clearDb() {
-    return this.Dataset.deleteMany({}, err => {
+    return this.Dataset.deleteMany({}, (err) => {
       if (!err) {
         return true;
       }
     });
   }
 
-  private findByUniqueName(datasetName: string): Promise<Dataset | null> {
-    return this.Dataset.findOne({
-      unique_name: datasetName,
+  async findByUniqueName(datasetName: string): Promise<Dataset | null> {
+    return await this.Dataset.findOne({
+      unique_name: datasetName
     }).exec();
   }
 
-  private updateDataset(
-    dataset: Dataset,
-    persistedDataset: Dataset,
-  ): Promise<Dataset> {
+  private updateDataset(dataset: Dataset, persistedDataset: Dataset): Promise<Dataset> {
     Object.keys(dataset).forEach((key, _) => {
       persistedDataset[key] = dataset[key];
     });
 
     return persistedDataset.save();
-  }
-
-  private createDataset(dataset: Dataset): Promise<Dataset> {
-    return new this.Dataset(dataset).save();
   }
 }

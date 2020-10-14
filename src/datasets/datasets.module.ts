@@ -5,13 +5,9 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { DatasetSchema } from './dataset.schema';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature(
-      [{ name: 'datasets', schema: DatasetSchema }],
-      'datasets',
-    ),
-  ],
+  imports: [MongooseModule.forFeature([{ name: 'datasets', schema: DatasetSchema }], 'datasets')],
   controllers: [DatasetsController],
   providers: [DatasetsService],
+  exports: [MongooseModule, DatasetsService]
 })
 export class DatasetsModule {}

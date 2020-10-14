@@ -1,4 +1,6 @@
-exports.config = {
+import { RemoteOptions } from 'webdriverio';
+
+export const wdioConfig: RemoteOptions = {
   //
   // ====================
   // Runner Configuration
@@ -16,7 +18,7 @@ exports.config = {
   // NPM script (see https://docs.npmjs.com/cli/run-script) then the current working
   // directory is where your package.json resides, so `wdio` will be called from there.
   //
-  specs: ['./dist/scrapper/runner.js'],
+  //specs: ['./dist/scrapper/runner.js'],
   // Patterns to exclude.
   exclude: [
     // 'path/to/excluded/files'
@@ -43,29 +45,27 @@ exports.config = {
   // Sauce Labs platform configurator - a great tool to configure your capabilities:
   // https://docs.saucelabs.com/reference/platforms-configurator
   //
-  capabilities: [
-    {
-      // maxInstances can get overwritten per capability. So if you have an in-house Selenium
-      // grid with only 5 firefox instances available you can make sure that not more than
-      // 5 instances get started at a time.
-      maxInstances: 1,
-      //
-      browserName: 'chrome',
-      acceptInsecureCerts: true,
-      // If outputDir is provided WebdriverIO can capture driver session logs
-      // it is possible to configure which logTypes to include/exclude.
-      // excludeDriverLogs: ['*'], // pass '*' to exclude all driver session logs
-      // excludeDriverLogs: ['bugreport', 'server'],
-      'goog:chromeOptions': {
-        args: [
-          '--headless',
-          'user-agent=...',
-          '--disable-gpu',
-          '--window-size=1440,735',
-        ],
-      },
-    },
-  ],
+  capabilities: {
+    // maxInstances can get overwritten per capability. So if you have an in-house Selenium
+    // grid with only 5 firefox instances available you can make sure that not more than
+    // 5 instances get started at a time.
+    maxInstances: 1,
+    //
+    browserName: 'chrome',
+    acceptInsecureCerts: true
+    // If outputDir is provided WebdriverIO can capture driver session logs
+    // it is possible to configure which logTypes to include/exclude.
+    // excludeDriverLogs: ['*'], // pass '*' to exclude all driver session logs
+    // excludeDriverLogs: ['bugreport', 'server'],
+    //'goog:chromeOptions': {
+    //  args: [
+    //    '--headless',
+    //    'user-agent=...',
+    //    '--disable-gpu',
+    //    '--window-size=1440,735',
+    //  ],
+    //},
+  },
   //
   // ===================
   // Test Configurations
@@ -132,15 +132,14 @@ exports.config = {
   // Test reporter for stdout.
   // The only one supported by default is 'dot'
   // see also: https://webdriver.io/docs/dot-reporter.html
-  reporters: ['json'],
-
+  reporters: []
   //
   // Options to be passed to Mocha.
   // See the full list at http://mochajs.org/
-  mochaOpts: {
-    ui: 'bdd',
-    timeout: 6000000,
-  },
+  //mochaOpts: {
+  //  ui: 'bdd',
+  //  timeout: 6000000,
+  //},
   //
   // =====
   // Hooks

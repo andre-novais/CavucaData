@@ -11,7 +11,7 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "incremental": true,
-    "types": ["node", "@wdio/sync", "mocha", "mongoose", "jest"],
+    "types": ["node", "webdriverio", "mocha", "mongoose", "jest"],
     "strict": true,
     "noImplicitAny": false,
     "esModuleInterop": true,

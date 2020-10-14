@@ -11,10 +11,10 @@ export const datasetMock: any = {
       description: '',
       url:
         'http://www.anp.gov.br/arquivos/dadosabertos/anuario2019/anuario-2019-abertos-metadados-tabela2.15.pdf',
-      type: '.pdf',
-    },
+      type: '.pdf'
+    }
   ],
   sourceUrl:
     'https://dados.gov.br/dataset/t2-15-anuario-estatistico-2019-reinjecao-de-gas-natural-por-localizacao',
-  unique_name: 'site_name',
+  unique_name: 'site_name'
 };

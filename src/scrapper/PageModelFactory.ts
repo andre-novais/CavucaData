@@ -1,9 +1,12 @@
+import { remote } from 'webdriverio';
+import { wdioConfig } from './config/wdio.conf';
 interface PageModel {
-  iterator: Function;
+  listingPage: ListingPageModel;
 }
 
 interface ListingPageModel {
   scrappe: Function;
+  getDataset: Function;
 }
 
 class PageModelFactory {
@@ -15,31 +18,20 @@ class PageModelFactory {
     this._siteType = config['site_type'];
   }
 
-  create_page(): PageModel {
+  async create_page(): Promise<PageModel> {
     class Page implements PageModel {
-      _listingPage: ListingPageModel;
+      listingPage: ListingPageModel;
 
-      constructor(listingPageModel, datasetPageModel, config) {
-        this._listingPage = new listingPageModel(config, datasetPageModel);
+      constructor(listingPageModel, datasetPageModel, config, browser) {
+        this.listingPage = new listingPageModel(config, datasetPageModel, browser);
       }
-
-      iterator = function*(this: Page) {
-        const iterator = this._listingPage.scrappe();
-        let completed = false;
-
-        while (true) {
-          const page_return = iterator.next();
-          completed = !!page_return.done;
-          if (completed) break;
-          yield page_return.value;
-        }
-      };
     }
 
     const listingPage = require(`./page_models/${this._siteType}Listing.page`);
     const datasetPage = require(`./page_models/${this._siteType}DataSet.page`);
 
-    return new Page(listingPage, datasetPage, this._config);
+    const browser = await remote(wdioConfig);
+    return new Page(listingPage, datasetPage, this._config, browser);
   }
 }
 export = PageModelFactory;
