@@ -7,7 +7,7 @@ export const siteMetaData = {
   },
   dados_gov_br: {
     site_type: 'Ckan',
-    base_url: 'http://dados.gov.br/dataset',
+    base_url: 'https://dados.gov.br/dataset?q=&sort=metadata_modified+desc',
     root_link_href: '/dataset/',
     site_name: 'união'
   }

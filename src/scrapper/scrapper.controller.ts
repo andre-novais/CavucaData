@@ -12,7 +12,7 @@ export class ScrapperController {
   }
 
   @Get()
-  test() {
-    return this.scrapperService.tesr();
+  startScrappingService() {
+    return this.scrapperService.startScrapping();
   }
 }

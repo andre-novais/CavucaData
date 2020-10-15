@@ -30,6 +30,7 @@ export class ScrapperService {
         const normalizedName = name.replace(/ /gi, '_');
         const uniqueName = config.site_name + normalizedName;
         const persistedDataset = await this.datasetsService.findByUniqueName(uniqueName);
+
         if (!persistedDataset) {
           const dataset = await page.listingPage.getDataset(name);
           const res = await this.datasetsService.createDataset(dataset);

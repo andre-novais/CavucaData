@@ -17,14 +17,17 @@ class CkanListing {
     await this.enter();
     while (true) {
       const nextPageBtn = await this.nextPageBtn();
-      completed = await !nextPageBtn.isExisting();
 
       const names = await this.dataSetNames();
       for (const name of names) {
         yield name;
       }
 
-      if (completed) break;
+      completed = !(await nextPageBtn.isExisting());
+      if (completed) {
+        await this.browser.closeWindow()
+        break;
+      }
 
       await nextPageBtn.click();
       await this.waitForLoad();
@@ -32,7 +35,6 @@ class CkanListing {
   };
 
   async getDataset(name: string) {
-    await this.browser.debug()
     const dataset = await this.browser.$(`*=${name}`);
     await dataset.click();
     return await this._dataSetPage.getDataset();
@@ -44,7 +46,7 @@ class CkanListing {
   }
 
   private async nextPageBtn() {
-    return this.browser.$(`*=»`);
+    return await this.browser.$(`*=»`);
   }
 
   private async dataSetNames() {
