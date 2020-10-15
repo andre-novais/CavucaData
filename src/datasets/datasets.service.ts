@@ -13,7 +13,7 @@ export class DatasetsService {
     const persistedDataset = await this.findByUniqueName(dataset.unique_name);
 
     if (persistedDataset) {
-      return this.updateDataset(dataset, persistedDataset);
+      return await this.updateDataset(dataset, persistedDataset);
     }
     return await this.createDataset(dataset);
   }
@@ -22,17 +22,14 @@ export class DatasetsService {
     return this.Dataset.findById(id).exec();
   }
 
-  createDataset(dataset: Dataset): Promise<Dataset> {
-    return new this.Dataset(dataset)
-      .save()
-      .then((data) => data)
-      .catch((err) => {
-        return err;
-      });
+  async createDataset(dataset: Dataset): Promise<Dataset> {
+    return await new this.Dataset(dataset).save().catch((err) => {
+      return err;
+    });
   }
 
-  clearDb() {
-    return this.Dataset.deleteMany({}, (err) => {
+  async clearDb() {
+    return await this.Dataset.deleteMany({}, (err) => {
       if (!err) {
         return true;
       }
@@ -45,11 +42,11 @@ export class DatasetsService {
     }).exec();
   }
 
-  private updateDataset(dataset: Dataset, persistedDataset: Dataset): Promise<Dataset> {
+  private async updateDataset(dataset: Dataset, persistedDataset: Dataset): Promise<Dataset> {
     Object.keys(dataset).forEach((key, _) => {
       persistedDataset[key] = dataset[key];
     });
 
-    return persistedDataset.save();
+    return await persistedDataset.save();
   }
 }

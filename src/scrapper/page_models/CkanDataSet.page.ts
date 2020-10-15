@@ -56,7 +56,9 @@ class CkanDataSet {
 
   private async organization() {
     const organizationElem = await (
-      await (await (await this.browser.$('aside.secondary')).$('div.module-narrow')).$('.module-content')
+      await (await (await this.browser.$('aside.secondary')).$('div.module-narrow')).$(
+        '.module-content'
+      )
     ).$('.heading');
 
     const organization = (await organizationElem.getText()).trim();
@@ -114,7 +116,7 @@ class CkanDataSet {
     const name = await this.getResourceName(elem).catch(() => null);
     const description = await this.getResourceDescription(elem).catch(() => null);
     const url = await this.getResourceUrl(elem).catch(() => null);
-    const type =await this.getResourceType(elem)
+    const type = await this.getResourceType(elem);
 
     const resource = {
       name: name,
@@ -151,9 +153,9 @@ class CkanDataSet {
   }
 
   private async getResourceType(elem: WebdriverIO.Element) {
-    const resourceTypeElem = await elem.$('.format-label')
+    const resourceTypeElem = await elem.$('.format-label');
 
-    return resourceTypeElem.getAttribute('data-format')
+    return resourceTypeElem.getAttribute('data-format');
   }
 
   private async groups() {
@@ -194,12 +196,12 @@ class CkanDataSet {
   }
 
   private uniqueName(name: String) {
-    let displayName = name
-    if (displayName.length > 77){
-      displayName = displayName.substring(0, 77) + '...'
+    let displayName = name;
+    if (displayName.length > 77) {
+      displayName = displayName.substring(0, 77) + '...';
     }
 
-    return this.site_name + displayName
+    return this.site_name + displayName;
   }
 
   private async waitForLoad() {

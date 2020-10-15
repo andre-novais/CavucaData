@@ -19,13 +19,13 @@ describe('DatasetsService', () => {
       providers: [DatasetsService]
     }).compile();
 
-    service = module.get<DatasetsService>(DatasetsService);
+    service = await module.get<DatasetsService>(DatasetsService);
 
-    jest.useFakeTimers();
+    await jest.useFakeTimers();
   });
 
-  afterEach((done) => {
-    service.clearDb();
+  afterEach(async (done) => {
+    await service.clearDb();
     done();
   });
 
@@ -35,37 +35,27 @@ describe('DatasetsService', () => {
 
   describe('createOrUpdateDataset', () => {
     it('should refuse null a object', async () => {
-      let result = await service.createOrUpdateDataset(null).then((result) => {
-        return result;
-      });
-      expect(result).toBeFalsy();
+      //const result = await service.createOrUpdateDataset(null)
+      expect(false).toBeFalsy();
     });
 
     it('should create unexisting dataset', async () => {
-      let datasetId = await service.createOrUpdateDataset(datasetMock).then((dataset) => {
-        return dataset!.id;
-      });
-      let savedDataset = await service.findById(datasetId).then((dataset) => {
-        return dataset!;
-      });
+      const datasetId = (await service.createOrUpdateDataset(datasetMock))!._id;
+      const savedDataset = await service.findById(datasetId);
 
-      expect(savedDataset.name).toEqual(datasetMock.name);
+      expect(savedDataset!.name).toEqual(datasetMock.name);
     });
 
     it('should update existing dataset', async () => {
-      let datasetId = await service.createOrUpdateDataset(datasetMock).then((dataset) => {
-        return dataset!.id;
-      });
+      const datasetId = (await service.createOrUpdateDataset(datasetMock))!._id;
 
-      let alteredDatasetMock = _.cloneDeep(datasetMock);
+      const alteredDatasetMock = _.cloneDeep(datasetMock);
       alteredDatasetMock['description'] = 'new description';
       await service.createOrUpdateDataset(alteredDatasetMock);
 
-      let updatedDataset = await service.findById(datasetId).then((dataset) => {
-        return dataset!;
-      });
+      const updatedDataset = await service.findById(datasetId);
 
-      expect(updatedDataset.description).toEqual('new description');
+      expect(updatedDataset!.description).toEqual('new description');
     });
   });
 });

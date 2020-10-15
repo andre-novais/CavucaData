@@ -25,7 +25,7 @@ class CkanListing {
 
       completed = !(await nextPageBtn.isExisting());
       if (completed) {
-        await this.browser.closeWindow()
+        await this.browser.closeWindow();
         break;
       }
 
