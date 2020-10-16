@@ -14,12 +14,12 @@ export class DatasetsController {
 
   @Get('sites')
   async listSites() {
-    return await this.datasetsService.listSites()
+    return await this.datasetsService.listFilterOptionsByCategory('site_name')
   }
 
   @Get('sites/:site_name')
   async listDatasetsBySite(@Param('site_name') site_name: string) {
-    return await this.datasetsService.listDatasetsBySite(site_name)
+    return await this.datasetsService.listDatasetsByFilter({'site_name': site_name})
   }
 
   @Get('tags')

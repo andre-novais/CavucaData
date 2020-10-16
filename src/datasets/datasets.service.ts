@@ -11,12 +11,12 @@ export class DatasetsService {
     return await this.Dataset.find({}).exec()
   }
 
-  async listFilterOptionByCategory(category: string) {
+  async listFilterOptionsByCategory(category: string) {
     return await this.Dataset.find({}).select(category).distinct(category).exec()
   }
 
-  async listDatasetsBySite(site: string) {
-    return await this.Dataset.find({'site_name': site}).exec()
+  async listDatasetsByFilter(filter: {}) {
+    return await this.Dataset.find({filter}).exec()
   }
 
   async createOrUpdateDataset(dataset: Dataset | null): Promise<Dataset | null> {
