@@ -7,6 +7,18 @@ import { InjectModel } from '@nestjs/mongoose';
 export class DatasetsService {
   constructor(@InjectModel('datasets') private Dataset: Model<Dataset>) {}
 
+  async listDatasets() {
+    return await this.Dataset.find({}).exec()
+  }
+
+  async listFilterOptionByCategory(category: string) {
+    return await this.Dataset.find({}).select(category).distinct(category).exec()
+  }
+
+  async listDatasetsBySite(site: string) {
+    return await this.Dataset.find({'site_name': site}).exec()
+  }
+
   async createOrUpdateDataset(dataset: Dataset | null): Promise<Dataset | null> {
     if (!dataset) return Promise.resolve(null);
 
@@ -18,8 +30,8 @@ export class DatasetsService {
     return await this.createDataset(dataset);
   }
 
-  findById(id: number) {
-    return this.Dataset.findById(id).exec();
+  async findById(id: number) {
+    return await this.Dataset.findById(id).exec();
   }
 
   async createDataset(dataset: Dataset): Promise<Dataset> {
