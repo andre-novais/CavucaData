@@ -30,6 +30,7 @@ export class DatasetsController {
     const category = this.CATEGORIES['SITE']
     const filter = {}
     filter[category] = site_name
+
     return await this.datasetsService.listDatasetsByFilter(filter)
   }
 
@@ -43,6 +44,7 @@ export class DatasetsController {
     const category = this.CATEGORIES['TAG']
     const filter = {}
     filter[category] = tag
+
     return await this.datasetsService.listDatasetsByFilter(filter)
   }
 
@@ -56,6 +58,7 @@ export class DatasetsController {
     const category = this.CATEGORIES['GROUP']
     const filter = {}
     filter[category] = group
+
     return await this.datasetsService.listDatasetsByFilter(filter)
   }
 
@@ -69,11 +72,12 @@ export class DatasetsController {
     const category = this.CATEGORIES['ORGANIZATION']
     const filter = {}
     filter[category] = organization
+
     return await this.datasetsService.listDatasetsByFilter(filter)
   }
 
   @Get(':id')
-  async findById(@Param('id', ParseIntPipe) id: number) {
+  async findById(@Param('id') id: string) {
     return await this.datasetsService.findById(id);
   }
 }

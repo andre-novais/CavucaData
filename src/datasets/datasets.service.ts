@@ -42,7 +42,7 @@ export class DatasetsService {
     return await this.createDataset(dataset);
   }
 
-  async findById(id: number) {
+  async findById(id: string) {
     return await this.Dataset.findById(id).exec();
   }
 
