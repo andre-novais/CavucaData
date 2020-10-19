@@ -15,12 +15,15 @@ export class DatasetsService {
 
   async listFilterOptionsByCategory(category: string) {
     const query = await this.Dataset.find({}).select(category).distinct(category).exec()
-    if (Array.isArray(query[0])){
+    const queryElemsAreArrays = Array.isArray(query[0])
+    if (queryElemsAreArrays){
+
       const filterOptions: string[] = []
       for (const options of query) {
         filterOptions.concat(options)
       }
       return filterOptions
+
     } else return query
   }
 
