@@ -100,13 +100,12 @@ class CkanDataSet {
   }
 
   private async resources() {
-    const resources = {};
-    let counter = 0;
+    const resources: object[] = [];
     const resourceListItems = await this.browser.$$('.resource-item');
 
     for (const item of resourceListItems) {
       const resource = await this.getResourceData(item);
-      resources[`resource${++counter}`] = resource;
+      resources.push(resource);
     }
 
     return resources;

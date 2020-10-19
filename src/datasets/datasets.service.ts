@@ -10,25 +10,28 @@ export class DatasetsService {
   constructor(@InjectModel('datasets') private Dataset: Model<Dataset>) {}
 
   async listDatasets() {
-    return await this.Dataset.find({}).exec()
+    return await this.Dataset.find({}).exec();
   }
 
   async listFilterOptionsByCategory(category: string) {
-    const query = await this.Dataset.find({}).select(category).distinct(category).exec()
-    const queryElemsAreArrays = Array.isArray(query[0])
-    if (queryElemsAreArrays){
-
-      const filterOptions: string[] = []
+    const query = await this.Dataset.find({}).select(category).distinct(category).exec();
+    const queryElemsAreArrays = Array.isArray(query[0]);
+    if (queryElemsAreArrays) {
+      const filterOptions: string[] = [];
       for (const options of query) {
-        filterOptions.concat(options)
+        filterOptions.concat(options);
       }
-      return filterOptions
-
-    } else return query
+      return filterOptions;
+    } else return query;
   }
 
   async listDatasetsByFilter(filter: {}) {
-    return await this.Dataset.find(filter).exec()
+    return await this.Dataset.find(filter).exec();
+  }
+
+  async findDownloadUrl(id: string, resource_index: number) {
+    const dataset = await this.findById(id);
+    return dataset!['resources'][resource_index].url;
   }
 
   async createOrUpdateDataset(dataset: Dataset | null): Promise<Dataset | null> {
