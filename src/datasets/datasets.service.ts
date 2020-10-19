@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Dataset } from './dataset.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class DatasetsService {
+  private readonly logger = new Logger(DatasetsService.name);
+
   constructor(@InjectModel('datasets') private Dataset: Model<Dataset>) {}
 
   async listDatasets() {
@@ -12,11 +14,18 @@ export class DatasetsService {
   }
 
   async listFilterOptionsByCategory(category: string) {
-    return await this.Dataset.find({}).select(category).distinct(category).exec()
+    const query = await this.Dataset.find({}).select(category).distinct(category).exec()
+    if (Array.isArray(query[0])){
+      const filterOptions: string[] = []
+      for (const options of query) {
+        filterOptions.concat(options)
+      }
+      return filterOptions
+    } else return query
   }
 
   async listDatasetsByFilter(filter: {}) {
-    return await this.Dataset.find({filter}).exec()
+    return await this.Dataset.find(filter).exec()
   }
 
   async createOrUpdateDataset(dataset: Dataset | null): Promise<Dataset | null> {
