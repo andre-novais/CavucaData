@@ -2,10 +2,12 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Dataset } from './dataset.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
+import { Client } from 'elasticsearch';
 
 @Injectable()
 export class DatasetsService {
   private readonly logger = new Logger(DatasetsService.name);
+  private readonly esclient = new Client({ host: process.env['ES_URL'] })
 
   constructor(@InjectModel('datasets') private Dataset: Model<Dataset>) {}
 
@@ -49,10 +51,57 @@ export class DatasetsService {
     return await this.Dataset.findById(id).exec();
   }
 
-  async createDataset(dataset: Dataset): Promise<Dataset> {
+  async createDataset(dataset: Dataset | any): Promise<Dataset> {
+    await this.indexDataset(dataset);
+
     return await new this.Dataset(dataset).save().catch((err) => {
       return err;
     });
+  }
+
+  async indexDataset(dataset: Dataset) {
+    return await this.esclient.index({
+      index: 'datasets',
+      type: 'dataset',
+      id: dataset.unique_name,
+      body: {
+        name: dataset.name,
+        tags: dataset.tags,
+        groups: dataset.groups,
+        organization: dataset.organization,
+        resourceTypes: dataset.resources.map(resource => resource.type),
+        site: dataset.site_name,
+        unique_name: dataset.unique_name
+      }
+    })
+  }
+
+  async search(searchTerms: any): Promise<any> {
+    const organization = searchTerms.organization || '';
+    const tags = searchTerms.tags || '';
+    const groups = searchTerms.groups || '';
+    const sites = searchTerms.sites || '';
+    const resourceTypes = searchTerms.resourceTypes || '';
+
+    const esResponse =  await this.esclient.search({
+      index: 'datasets',
+      type:'dataset',
+      body: { query: { bool: { should: [
+        {
+          simple_query_string: {
+            query: searchTerms.query,
+            all_fields: true
+          }
+        },
+        { match: { organization: { query: organization } } },
+        { match: { tags: { query: tags } } },
+        { match: { groups: { query: groups } } },
+        { match: { site_name: { query: sites } } },
+        { match: { resourceTypes: { query: resourceTypes } } }
+      ]}}}
+    })
+
+    return esResponse.hits.hits
   }
 
   async clearDb() {

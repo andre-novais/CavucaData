@@ -1,8 +1,6 @@
 import { Controller, Get, Res } from '@nestjs/common';
 import { DatasetsService } from './datasets.service';
-import { Param, ParseIntPipe, Logger } from '@nestjs/common';
-import { filter } from 'lodash';
-import { response } from 'express';
+import { Param, ParseIntPipe, Logger, Query } from '@nestjs/common';
 
 @Controller('datasets')
 export class DatasetsController {
@@ -75,6 +73,31 @@ export class DatasetsController {
     filter[category] = organization;
 
     return await this.datasetsService.listDatasetsByFilter(filter);
+  }
+
+  @Get('search')
+  async elasticSearch(
+    @Query('q') query,
+    @Query('tags') tags,
+    @Query('organizations') organizations,
+    @Query('groups') groups,
+    @Query('sites') sites,
+    @Query('resourceTypes') resourceTypes
+  ) {
+    const searchTerms = {
+      query: query,
+      tags: tags,
+      organizations: organizations,
+      groups: groups,
+      sites: sites,
+      resourceTypes: resourceTypes
+    }
+    return await this.datasetsService.search(searchTerms);
+  }
+
+  @Get('clearDb')
+  async clear() {
+    await this.datasetsService.clearDb()
   }
 
   @Get(':id')
