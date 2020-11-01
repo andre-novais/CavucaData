@@ -16,8 +16,7 @@ export class ScrapperService {
 
   async startScrapping() {
     this.scrappe().catch((err) => null);
-    //this.datasetsService.clearDb()
-    return 'title';
+    return 'scrapping process started';
   }
 
   async scrappe() {

@@ -40,7 +40,7 @@ class CkanDataSet {
       await (await (await this.browser.$('div.primary')).$('<article>')).$('<div>')
     ).$('<h1>');
     const text = await nameElem.getText();
-    return text.trim().replace(/ /gi, '_');
+    return text.trim();
   }
 
   private async description() {
@@ -195,7 +195,7 @@ class CkanDataSet {
   }
 
   private uniqueName(name: String) {
-    let displayName = name;
+    let displayName = name.replace(/ /gi, '_');
     if (displayName.length > 77) {
       displayName = displayName.substring(0, 77) + '...';
     }
