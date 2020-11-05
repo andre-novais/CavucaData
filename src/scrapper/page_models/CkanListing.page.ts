@@ -11,7 +11,7 @@ class CkanListing {
     this.browser = browser;
   }
 
-  scrappe = async function* (this: CkanListing) {
+  scrappe = async function* (this: CkanListing): AsyncGenerator<string, void, void>  {
     let completed: boolean;
 
     await this.enter();
@@ -35,7 +35,17 @@ class CkanListing {
   };
 
   async getDataset(name: string) {
-    const dataset = await this.browser.$(`*=${name}`);
+    const dataset = await (await this.browser.$('.dataset-heading')).$(`*=${name}`);
+
+    console.log(name)
+    //<a href="/dataset/ds018">Emissões Diretas de Títulos da Dívida Pública Mobiliária Federal interna - DPMFi</a>
+
+    const doubleSpacesBugPresent = !(await dataset.isExisting())
+    console.log(doubleSpacesBugPresent)
+    await this.browser.debug()
+
+    if (doubleSpacesBugPresent) { return null }
+
     await dataset.click();
     return await this._dataSetPage.getDataset();
   }

@@ -23,10 +23,7 @@ export const DatasetSchema = new Schema({
     type: String,
     required: true
   },
-  description: {
-    type: String,
-    required: true
-  },
+  description: String,
   organization: String,
   tags: [String],
   aditionalInfo: Schema.Types.Mixed,

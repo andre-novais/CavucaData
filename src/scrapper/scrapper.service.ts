@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import Launcher from '@wdio/cli';
 import PageModelFactory = require('./PageModelFactory');
 import { log } from '../lib/dataset/log';
@@ -7,6 +7,8 @@ import { DatasetsService } from '../datasets/datasets.service';
 
 @Injectable()
 export class ScrapperService {
+  private readonly logger = new Logger(DatasetsService.name);
+
   constructor(private readonly datasetsService: DatasetsService) {}
 
   call() {
@@ -31,9 +33,15 @@ export class ScrapperService {
         const persistedDataset = await this.datasetsService.findByUniqueName(uniqueName);
 
         if (!persistedDataset) {
+          this.logger.log(name)
+          this.logger.log(uniqueName)
           const dataset = await page.listingPage.getDataset(name);
+          if (!dataset) {
+            continue
+          }
+
           const res = await this.datasetsService.createDataset(dataset);
-          log(res);
+          this.logger.log(res);
         }
       }
     }
