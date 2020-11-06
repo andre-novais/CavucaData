@@ -3,7 +3,11 @@ import { Document, Schema } from 'mongoose';
 export interface Dataset extends Document {
   name: string;
   description: string;
-  organization: string;
+  organization: {
+    name: string;
+    description: string;
+    image_url: string;
+  }
   tags: string[] | [];
   aditionalInfo: object | null;
   resources: {
@@ -11,6 +15,8 @@ export interface Dataset extends Document {
     description: string;
     url: string;
     type: string;
+    format: string;
+    created_at: string;
   }[];
   sourceUrl: string;
   groups: string[] | [];
@@ -23,7 +29,7 @@ export const DatasetSchema = new Schema({
     type: String,
     required: true
   },
-  description: String,
+  description: Object,
   organization: String,
   tags: [String],
   aditionalInfo: Schema.Types.Mixed,
