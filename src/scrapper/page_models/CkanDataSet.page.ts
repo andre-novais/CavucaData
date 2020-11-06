@@ -221,4 +221,4 @@ class CkanDataSet {
   }
 }
 
-module.exports = CkanDataSet;
+export = CkanDataSet;

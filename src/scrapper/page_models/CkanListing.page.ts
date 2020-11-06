@@ -37,12 +37,7 @@ class CkanListing {
   async getDataset(name: string) {
     const dataset = await (await this.browser.$('.dataset-heading')).$(`*=${name}`);
 
-    console.log(name)
-    //<a href="/dataset/ds018">Emissões Diretas de Títulos da Dívida Pública Mobiliária Federal interna - DPMFi</a>
-
     const doubleSpacesBugPresent = !(await dataset.isExisting())
-    console.log(doubleSpacesBugPresent)
-    await this.browser.debug()
 
     if (doubleSpacesBugPresent) { return null }
 
@@ -79,4 +74,4 @@ class CkanListing {
   }
 }
 
-module.exports = CkanListing;
+export = CkanListing;

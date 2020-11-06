@@ -1,7 +1,12 @@
 import { remote } from 'webdriverio';
-import { wdioConfig } from './config/wdio.conf';
+import { wdioConfig } from '../config/wdio.conf';
+import listingPage from '../page_models/CkanListing.page'
+import datasetPage from '../page_models/CkanDataSet.page'
+
 interface PageModel {
   listingPage: ListingPageModel;
+  scrappe: Function;
+  getDataset: Function;
 }
 
 interface ListingPageModel {
@@ -9,7 +14,7 @@ interface ListingPageModel {
   getDataset: Function;
 }
 
-class PageModelFactory {
+class CkanWdioScrapper {
   _config: object;
   _siteType: string;
 
@@ -25,13 +30,18 @@ class PageModelFactory {
       constructor(listingPageModel, datasetPageModel, config, browser) {
         this.listingPage = new listingPageModel(config, datasetPageModel, browser);
       }
-    }
 
-    const listingPage = require(`./page_models/${this._siteType}Listing.page`);
-    const datasetPage = require(`./page_models/${this._siteType}DataSet.page`);
+      scrappe() {
+        return this.listingPage.scrappe()
+      }
+
+      async getDataset() {
+        return await this.listingPage.getDataset()
+      }
+    }
 
     const browser = await remote(wdioConfig);
     return new Page(listingPage, datasetPage, this._config, browser);
   }
 }
-export = PageModelFactory;
+export = CkanWdioScrapper;

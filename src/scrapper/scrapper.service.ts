@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import Launcher from '@wdio/cli';
-import PageModelFactory = require('./PageModelFactory');
 import { log } from '../lib/dataset/log';
 import { siteMetaData } from './config/site_metadata';
 import { DatasetsService } from '../datasets/datasets.service';
@@ -23,9 +22,9 @@ export class ScrapperService {
 
   async scrappe() {
     for (const [_key, config] of Object.entries(siteMetaData)) {
-      const pageModelFactory = new PageModelFactory(config);
+      const pageModelFactory = new config.site_type(config);
       const page = await pageModelFactory.create_page();
-      const iterator = page.listingPage.scrappe();
+      const iterator = page.scrappe();
 
       for await (const name of iterator) {
         const normalizedName = name.replace(/ /gi, '_');
@@ -35,7 +34,7 @@ export class ScrapperService {
         if (!persistedDataset) {
           this.logger.log(name)
           this.logger.log(uniqueName)
-          const dataset = await page.listingPage.getDataset(name);
+          const dataset = await page.getDataset(name);
           if (!dataset) {
             continue
           }
