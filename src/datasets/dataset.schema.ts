@@ -19,7 +19,7 @@ export interface Dataset extends Document {
     created_at: string;
   }[];
   sourceUrl: string;
-  groups: string[] | [];
+  groups: object[] | [];
   unique_name: string;
   site_name: String;
 }
@@ -29,8 +29,8 @@ export const DatasetSchema = new Schema({
     type: String,
     required: true
   },
-  description: Object,
-  organization: String,
+  description: String,
+  organization: Object,
   tags: [String],
   aditionalInfo: Schema.Types.Mixed,
   resources: {
@@ -38,7 +38,7 @@ export const DatasetSchema = new Schema({
     required: true
   },
   sourceUrl: String,
-  groups: [String],
+  groups: [Object],
   unique_name: {
     type: String,
     unique: true,

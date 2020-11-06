@@ -56,11 +56,9 @@ export class DatasetsService {
   }
 
   async createDataset(dataset: Dataset | any): Promise<Dataset> {
-    await this.indexDataset(dataset);
+    //await this.indexDataset(dataset);
 
-    return await new this.Dataset(dataset).save().catch((err) => {
-      return err;
-    });
+    return await new this.Dataset(dataset).save();
   }
 
   async indexDataset(dataset: Dataset) {
@@ -72,7 +70,7 @@ export class DatasetsService {
         tags: dataset.tags,
         groups: dataset.groups,
         organization: dataset.organization,
-        resourceTypes: [...new Set(dataset.resources.map(resource => resource.type))],
+        resourceTypes: [...new Set(dataset.resources.map(resource => resource.format))],
         site: dataset.site_name
       }
     })
@@ -119,13 +117,7 @@ export class DatasetsService {
   }
 
   async teste2() {
-    return await this.esclient.search({
-      index: 'datasets',
-      body: {query:
-      {
-        match_all: {}
-      }}
-    })
+    return await this.Dataset.countDocuments()
   }
 
   async findByUniqueName(datasetName: string): Promise<Dataset | null> {
@@ -139,9 +131,9 @@ export class DatasetsService {
     //  index: 'datasets'
     //})
 
-    const esIndiceExistis = await this.esIndiceExistis()
+    const esIndiceExistis = true //await this.esIndiceExistis()
 
-    this.logger.log(esIndiceExistis, 'esIndiceExistis')
+    //this.logger.log(esIndiceExistis, 'esIndiceExistis')
 
     if(esIndiceExistis) { return }
 
@@ -179,7 +171,7 @@ export class DatasetsService {
       }
     })
 
-    this.logger.log(esRes, 'esRes')
+    //this.logger.log(esRes, 'esRes')
 
     return
   }

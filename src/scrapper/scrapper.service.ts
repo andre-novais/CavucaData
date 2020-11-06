@@ -16,31 +16,30 @@ export class ScrapperService {
   }
 
   async startScrapping() {
-    this.scrappe().catch((err) => null);
-    return 'scrapping process started';
+    return await this.scrappe().catch((err) => err);
   }
 
   async scrappe() {
     for (const [_key, config] of Object.entries(siteMetaData)) {
-      const pageModelFactory = new config.site_type(config);
-      const page = await pageModelFactory.create_page();
+      const page = new config.site_type(config);
+      //const page = await pageModelFactory.create_page();
       const iterator = page.scrappe();
 
       for await (const name of iterator) {
         const normalizedName = name.replace(/ /gi, '_');
         const uniqueName = config.site_name + normalizedName;
         const persistedDataset = await this.datasetsService.findByUniqueName(uniqueName);
-
         if (!persistedDataset) {
-          this.logger.log(name)
-          this.logger.log(uniqueName)
-          const dataset = await page.getDataset(name);
+          const dataset = await page.getDataset(name).catch(err => {
+            this.logger.error({err, name})
+          });
           if (!dataset) {
             continue
           }
 
-          const res = await this.datasetsService.createDataset(dataset);
-          this.logger.log(res);
+          const res = await this.datasetsService.createDataset(dataset).catch(err => {
+            this.logger.error({err, dataset})
+          })
         }
       }
     }
