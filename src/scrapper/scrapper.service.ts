@@ -25,6 +25,8 @@ export class ScrapperService {
       //const page = await pageModelFactory.create_page();
       const iterator = page.scrappe();
 
+      let newDatasetCounter = 0
+      let errorsCounter = 0
       for await (const name of iterator) {
         const normalizedName = name.replace(/ /gi, '_');
         const uniqueName = config.site_name + normalizedName;
@@ -32,16 +34,21 @@ export class ScrapperService {
         if (!persistedDataset) {
           const dataset = await page.getDataset(name).catch(err => {
             this.logger.error({err, name})
+            errorsCounter++
           });
           if (!dataset) {
             continue
           }
-
           const res = await this.datasetsService.createDataset(dataset).catch(err => {
             this.logger.error({err, dataset})
+            errorsCounter++
           })
+
+          if (res) { newDatasetCounter++ }
         }
       }
+
+      this.logger.log(`scrapped ${config.site_name}, saved ${newDatasetCounter} new datasets and got ${errorsCounter} errors`)
     }
   }
 }

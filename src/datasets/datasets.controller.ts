@@ -82,7 +82,7 @@ export class DatasetsController {
     @Query('organizations') organizations,
     @Query('groups') groups,
     @Query('sites') sites,
-    @Query('resourceTypes') resourceTypes
+    @Query('resourceFormats') resourceFormats
   ) {
     const searchTerms = {
       query: query,
@@ -90,7 +90,7 @@ export class DatasetsController {
       organizations: organizations,
       groups: groups,
       sites: sites,
-      resourceTypes: resourceTypes
+      resourceFormats: resourceFormats
     }
     return await this.datasetsService.search(searchTerms);
   }

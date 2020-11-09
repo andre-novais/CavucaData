@@ -9,8 +9,6 @@ export class DatasetsService {
   private readonly logger = new Logger(DatasetsService.name);
   private readonly esclient = new Client({ host: process.env['ES_URL'] })
 
-
-
   constructor(@InjectModel('datasets') private Dataset: Model<Dataset>) {
     this.prepareEs().catch(err => this.logger.log(err))
   }
@@ -56,26 +54,37 @@ export class DatasetsService {
   }
 
   async createDataset(dataset: Dataset | any): Promise<Dataset> {
-    //await this.indexDataset(dataset);
+    const savedDataset = await new this.Dataset(dataset).save()
 
-    return await new this.Dataset(dataset).save();
+    if (savedDataset.errors) {
+      this.logger.error(savedDataset.errors, 'savedDataset.errors')
+      return savedDataset
+    }
+
+    dataset['mongo_id'] = savedDataset._id
+    await this.indexDataset(dataset);
+
+    return savedDataset
   }
 
-  async indexDataset(dataset: Dataset) {
+  async indexDataset(dataset: any) {
     const esReturn = await this.esclient.index({
       index: 'datasets',
       id: dataset.unique_name,
       body: {
         name: dataset.name,
         tags: dataset.tags,
-        groups: dataset.groups,
-        organization: dataset.organization,
-        resourceTypes: [...new Set(dataset.resources.map(resource => resource.format))],
-        site: dataset.site_name
+        groups: dataset.groups.map(group => group.name),
+        organization: dataset.organization?.name,
+        resourceFormats: [...new Set(dataset.resources.map(resource => resource.format))],
+        site: dataset.site_name,
+        mongo_id: dataset.mongo_id
       }
     })
 
-    this.logger.log(esReturn)
+    if (!['created', 'updated'].includes(esReturn.result)) {
+      this.logger.log(esReturn, 'esReturn')
+    }
 
     return esReturn
   }
@@ -85,7 +94,7 @@ export class DatasetsService {
     const tags = searchTerms.tags || '';
     const groups = searchTerms.groups || '';
     const sites = searchTerms.sites || '';
-    const resourceTypes = searchTerms.resourceTypes || '';
+    const resourceFormats = searchTerms.resourceFormats || '';
 
     const esResponse =  await this.esclient.search({
       index: 'datasets',
@@ -100,11 +109,11 @@ export class DatasetsService {
         { match: { tags: { query: tags } } },
         { match: { groups: { query: groups } } },
         { match: { site_name: { query: sites } } },
-        { match: { resourceTypes: { query: resourceTypes } } }
+        { match: { resourceFormats: { query: resourceFormats } } }
       ]}}}
     })
 
-    this.logger.log(esResponse)
+    this.logger.log(esResponse, 'esResponse')
     return esResponse.hits.hits
   }
 
@@ -127,13 +136,13 @@ export class DatasetsService {
   }
 
   async prepareEs(): Promise<void>{
-    //const r = await this.esclient.indices.delete({
-    //  index: 'datasets'
-    //})
+    const r = await this.esclient.indices.delete({
+      index: 'datasets'
+    })
 
-    const esIndiceExistis = true //await this.esIndiceExistis()
+    const esIndiceExistis = await this.esIndiceExistis()
 
-    //this.logger.log(esIndiceExistis, 'esIndiceExistis')
+    this.logger.log(esIndiceExistis, 'esIndiceExistis')
 
     if(esIndiceExistis) { return }
 
@@ -158,13 +167,16 @@ export class DatasetsService {
               type: 'text',
               analyzer: 'portuguese'
             },
-            resourceTypes: {
+            resourceFormats: {
               type: 'text',
               analyzer: 'portuguese'
             },
             site: {
               type: 'text',
               analyzer: 'portuguese'
+            },
+            mongo_id: {
+              type: 'keyword',
             }
           }
         }

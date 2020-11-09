@@ -19,7 +19,7 @@ export interface Dataset extends Document {
     created_at: string;
   }[];
   sourceUrl: string;
-  groups: object[] | [];
+  groups: any[];
   unique_name: string;
   site_name: String;
 }
