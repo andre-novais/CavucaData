@@ -1,5 +1,11 @@
-import CkanWdioScrapper from '../factories/CkanWdioFactory'
+//import CkanWdioScrapper from '../factories/CkanWdioFactory'
 import CkanScrapper from '../api_models/CkanScrapper'
+
+export interface SiteConfig {
+  site_type: any,
+  base_url: string,
+  site_name: string
+}
 
 export const siteMetaData = {
   dados_pbh_gov_br: {
@@ -12,4 +18,4 @@ export const siteMetaData = {
     base_url: 'https://dados.gov.br',
     site_name: 'união'
   }
-};
+}

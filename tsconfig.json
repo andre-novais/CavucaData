@@ -13,10 +13,16 @@
     "incremental": true,
     "types": ["node", "webdriverio", "mocha", "mongoose", "jest"],
     "strict": true,
-    "noImplicitAny": false,
+    //"noImplicitAny": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "strictNullChecks": true,
+    "forceConsistentCasingInFileNames": true,
+    "alwaysStrict": true,
+    "noUnusedParameters": true,
+    "strictFunctionTypes": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true
   },
   "include": ["src/**/*", ".eslintrc.js"]
 }

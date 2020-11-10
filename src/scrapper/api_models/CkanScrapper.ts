@@ -1,24 +1,52 @@
-import * as fetch from 'node-fetch'
+const fetch = require('node-fetch')
 import * as _ from 'lodash'
+import { SiteConfig } from '../config/site_metadata'
+import { DatasetDto } from '../../datasets/dataset.schema'
 
-interface ApiScrapper {
-  _config: any;
-  scrappe: Function;
-  getDataset: Function;
+interface CkanDataset {
+  name: string,
+  title: string,
+  notes: string,
+  tags: {display_name: string}[],
+  groups: {
+    title: string,
+    description: string,
+    image_display_url: string
+  }[],
+  resources: {
+    name: string,
+    description: string,
+    url: string,
+    format: string,
+    resource_type: string,
+    created: string
+  }[],
+  organization: {
+    title: string,
+    description: string,
+    image_url: string
+  },
+  extras: Record<string, string>[]
+}
+
+interface Organization {
+  name: string,
+  description: string,
+  image_url: string
 }
 
 class CkanScrapper {
-  _config: any;
-  _siteType: string;
-  _datasets: any[];
+  _config: SiteConfig
+  _siteType: string
+  _datasets: CkanDataset[]
 
-  constructor(config) {
-    this._config = config;
-    this._siteType = config['site_type'];
+  constructor(config: SiteConfig) {
+    this._config = config
+    this._siteType = config.site_type
     this._datasets = []
   }
 
-  scrappe = async function*(this: CkanScrapper) {
+  scrappe = async function*(this: CkanScrapper): AsyncGenerator<string> {
     const ROWS_PER_ITERATION = 1000
 
     let numRows = ROWS_PER_ITERATION
@@ -27,7 +55,7 @@ class CkanScrapper {
       const url = `${this._config.base_url}/api/3/action/package_search?rows=${ROWS_PER_ITERATION}&start=${ROWS_PER_ITERATION * (iterCount)}`
 
       const response = await (await fetch(url)).json()
-      const datasets: any[] = response.result.results
+      const datasets: CkanDataset[] = response.result.results
 
       this._datasets = datasets
       numRows = datasets.length
@@ -39,8 +67,9 @@ class CkanScrapper {
     }
   }
 
-    async getDataset(title) {
+    async getDataset(title: string): Promise<DatasetDto | null> {
       const data = this._datasets.find(dataset => dataset.title == title)
+      if(!data) { return null }
 
       const dataset = {
         name: data.title,
@@ -51,7 +80,7 @@ class CkanScrapper {
           return {
             name: group.title,
             description: group.description,
-            image_id: group.image_display_url
+            image_url: group.image_display_url
           }
         }),
         resources: data.resources.map(resource => {
@@ -64,7 +93,7 @@ class CkanScrapper {
             created_at: resource.created
           }
         }),
-        source_url: `${this._config.base_url}/dataset/${data.name}`,
+        sourceUrl: `${this._config.base_url}/dataset/${data.name}`,
         unique_name: this._config.site_name + data.title.replace(/ /gi, '_'),
         aditionalInfo: this.getAditionalInfo(data),
         site_name: this._config.site_name
@@ -73,8 +102,8 @@ class CkanScrapper {
       return dataset
     }
 
-    getOrganization(data) {
-      if(!data.organization) { return null }
+    getOrganization(data: CkanDataset): Organization | undefined {
+      if(!data.organization) { return undefined }
 
       return {
         name: data.organization.title,
@@ -83,8 +112,8 @@ class CkanScrapper {
       }
     }
 
-    getAditionalInfo(data) {
-      const localData = _.cloneDeep(data)
+    getAditionalInfo(data: CkanDataset): Record<string, string> {
+      const localData: any = _.cloneDeep(data)
 
       const alreadyIncludedItems: string[] = [
         'title', 'name', 'notes', 'organization', 'tags', 'groups', 'resources'
@@ -118,4 +147,4 @@ class CkanScrapper {
       return localData
     }
 }
-export = CkanScrapper;
+export = CkanScrapper
