@@ -1,4 +1,4 @@
-class CkanDataSet {
+/**class CkanDataSet {
   private site_name: string;
   private browser: WebdriverIO.BrowserObject;
 
@@ -222,3 +222,4 @@ class CkanDataSet {
 }
 
 export = CkanDataSet;
+**/

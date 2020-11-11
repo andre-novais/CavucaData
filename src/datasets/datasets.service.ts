@@ -4,9 +4,24 @@ import { Model } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
 import { ElasticSearchService } from './elasticsearch.service'
 
+enum FilterCategories {
+  site_name,
+  tags,
+  groups,
+  organization
+}
+
+type CategoryStrings = keyof typeof FilterCategories
+
 @Injectable()
 export class DatasetsService {
   private readonly logger = new Logger(DatasetsService.name)
+  public readonly filterCategories = {
+    sites: 'site_name',
+    tags: 'tags',
+    groups: 'groups',
+    organizations: 'organizations'
+  }
 
   constructor(
     @InjectModel('datasets') private Dataset: Model<Dataset>,
@@ -21,7 +36,7 @@ export class DatasetsService {
     return await this.Dataset.find({}).exec()
   }
 
-  async listFilterOptionsByCategory(category: string): Promise<string[]> {
+  async listFilterOptionsByCategory(category: CategoryStrings): Promise<string[]> {
     const query: string[] = await this.Dataset.find({}).select(category).distinct(category).exec()
     const queryElemsAreArrays = Array.isArray(query[0])
     if (queryElemsAreArrays) {
@@ -57,11 +72,12 @@ export class DatasetsService {
     const savedDataset = await new this.Dataset(dataset).save()
 
     if (savedDataset.errors) {
-      this.logger.error(savedDataset.errors, 'savedDataset.errors')
+      const savedDatasetErrors = savedDataset.errors
+      this.logger.error({savedDatasetErrors})
       return savedDataset
     }
 
-    dataset['mongo_id'] = savedDataset._id
+    dataset.mongo_id = savedDataset._id
     await this.elasticSearchService.indexDataset(dataset)
 
     return savedDataset
@@ -75,7 +91,7 @@ export class DatasetsService {
     await this.elasticSearchService.clearES()
 
     await this.Dataset.deleteMany({}, (err) => {
-      this.logger.error(err)
+      this.logger.error({err})
     })
   }
 

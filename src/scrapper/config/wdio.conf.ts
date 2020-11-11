@@ -1,4 +1,4 @@
-import { RemoteOptions } from 'webdriverio';
+import { RemoteOptions } from 'webdriverio'
 
 export const wdioConfig: RemoteOptions = {
   //
@@ -268,4 +268,4 @@ export const wdioConfig: RemoteOptions = {
    */
   //onReload: function(oldSessionId, newSessionId) {
   //}
-};
+}

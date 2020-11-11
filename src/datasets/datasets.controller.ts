@@ -1,4 +1,4 @@
-import { Controller, Get, Res } from '@nestjs/common'
+import { Controller, Get, Res, Logger } from '@nestjs/common'
 import { DatasetsService } from './datasets.service'
 import { ElasticSearchService, DatasetIndex } from './elasticsearch.service'
 import { Dataset } from './dataset.schema'
@@ -7,7 +7,7 @@ import { Response } from 'express'
 
 @Controller('datasets')
 export class DatasetsController {
-  //private readonly logger = new Logger(DatasetsController.name);
+  private readonly logger = new Logger(DatasetsController.name)
 
   constructor(
     private readonly datasetsService: DatasetsService,
@@ -66,7 +66,7 @@ export class DatasetsController {
     @Query('organizations') organizations: string,
     @Query('groups') groups: string,
     @Query('sites') sites: string,
-    @Query('resourceFormats') resourceFormats: string
+    @Query('formats') resourceFormats: string
   ): Promise<DatasetIndex[]> {
     const searchTerms = {
       query,
@@ -83,6 +83,7 @@ export class DatasetsController {
   @Get('clearDb')
   async clear(): Promise<void> {
     await this.datasetsService.clearDb()
+    this.logger.log('db and es cleared')
   }
 
   @Get('count')

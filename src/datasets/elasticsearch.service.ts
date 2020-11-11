@@ -43,7 +43,7 @@ export class ElasticSearchService {
     })
 
     if (!['created', 'updated'].includes(esReturn.result)) {
-      this.logger.log(esReturn, 'esReturn')
+      this.logger.error({esReturn})
     }
 
     return esReturn
@@ -73,7 +73,6 @@ export class ElasticSearchService {
       ]}}}
     })
 
-    this.logger.log(esResponse, 'esResponse')
     return esResponse
   }
 
@@ -84,7 +83,7 @@ export class ElasticSearchService {
 
     const esIndiceExistis = await this.esIndiceExistis()
 
-    this.logger.log(esIndiceExistis, 'esIndiceExistis')
+    this.logger.log({esIndiceExistis})
 
     if(esIndiceExistis) { return }
 
@@ -125,7 +124,7 @@ export class ElasticSearchService {
       }
     })
 
-    this.logger.log(esRes, 'esRes')
+    this.logger.log({esRes})
 
     return
   }
