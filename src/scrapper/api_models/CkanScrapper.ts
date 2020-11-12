@@ -19,7 +19,8 @@ interface CkanDataset {
     url: string,
     format: string,
     resource_type: string,
-    created: string
+    created: string,
+    last_modified: string
   }[],
   organization: {
     title: string,
@@ -75,7 +76,7 @@ class CkanScrapper {
         name: data.title,
         description: data.notes,
         organization: this.getOrganization(data),
-        tags: data.tags.map(tag => tag.display_name),
+        tags: data.tags.map(tag => tag.display_name.toLocaleLowerCase()),
         groups: data.groups.map(group => {
           return {
             name: group.title,
@@ -90,7 +91,8 @@ class CkanScrapper {
             url: resource.url,
             format: resource.format,
             type: resource.resource_type,
-            created_at: resource.created
+            created_at: +(new Date(resource.created)),
+            updated_at: +(new Date(resource.last_modified))
           }
         }),
         sourceUrl: `${this._config.base_url}/dataset/${data.name}`,

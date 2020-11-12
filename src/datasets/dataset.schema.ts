@@ -16,7 +16,8 @@ export interface DatasetDto {
     url: string,
     type: string,
     format: string,
-    created_at: string
+    created_at: number,
+    updated_at: number
   }[],
   sourceUrl: string,
   groups: {
