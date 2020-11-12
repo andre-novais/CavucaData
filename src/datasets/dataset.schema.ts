@@ -27,6 +27,7 @@ export interface DatasetDto {
   }[],
   unique_name: string,
   site_name: string,
+  site_display_name: string,
   mongo_id?: string
 }
 
@@ -53,6 +54,10 @@ export const DatasetSchema = new Schema({
     required: true
   },
   site_name: {
+    type: String,
+    required: true
+  },
+  site_display_name: {
     type: String,
     required: true
   }

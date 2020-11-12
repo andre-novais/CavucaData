@@ -81,7 +81,7 @@ class CkanScrapper {
           return {
             name: group.title,
             description: group.description,
-            image_url: group.image_display_url
+            image_url: this._config.image_base_url + group.image_display_url
           }
         }),
         resources: data.resources.map(resource => {
@@ -98,7 +98,8 @@ class CkanScrapper {
         sourceUrl: `${this._config.base_url}/dataset/${data.name}`,
         unique_name: this._config.site_name + data.title.replace(/ /gi, '_'),
         aditionalInfo: this.getAditionalInfo(data),
-        site_name: this._config.site_name
+        site_name: this._config.site_name,
+        site_display_name: this._config.site_display_name
       }
 
       return dataset
@@ -110,7 +111,7 @@ class CkanScrapper {
       return {
         name: data.organization.title,
         description: data.organization.description,
-        image_url: data.organization.image_url
+        image_url: this._config.image_base_url + data.organization.image_url
       }
     }
 
