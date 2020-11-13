@@ -5,7 +5,7 @@ export interface DatasetDto {
   description: string,
   organization?: {
     name: string,
-    description: string,
+    description?: string,
     image_url: string
   },
   tags: string[] | [],
@@ -22,7 +22,7 @@ export interface DatasetDto {
   sourceUrl: string,
   groups: {
     name: string,
-    description: string,
+    description?: string,
     image_url: string
   }[],
   unique_name: string,

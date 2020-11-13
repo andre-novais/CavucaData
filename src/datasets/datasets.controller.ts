@@ -1,7 +1,7 @@
 import { Controller, Get, Res, Logger } from '@nestjs/common'
 import { DatasetsService } from './datasets.service'
-import { ElasticSearchService, DatasetIndex } from './elasticsearch.service'
-import { Dataset } from './dataset.schema'
+import { ElasticSearchService } from './elasticsearch.service'
+import { Dataset, DatasetDto } from './dataset.schema'
 import { Param, ParseIntPipe, Query } from '@nestjs/common'
 import { Response } from 'express'
 
@@ -67,7 +67,7 @@ export class DatasetsController {
     @Query('groups') groups: string,
     @Query('sites') sites: string,
     @Query('formats') resourceFormats: string
-  ): Promise<DatasetIndex[]> {
+  ): Promise<DatasetDto[]> {
     const searchTerms = {
       query,
       tags,
@@ -89,6 +89,11 @@ export class DatasetsController {
   @Get('count')
   async countDatasets(): Promise<number> {
     return await this.datasetsService.countDatasets()
+  }
+
+  @Get('test')
+  async test(): Promise<any> {
+    return await this.datasetsService.test()
   }
 
   @Get(':id')

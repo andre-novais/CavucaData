@@ -2,16 +2,6 @@ import { Injectable, Logger } from '@nestjs/common'
 import { DatasetDto } from './dataset.schema'
 import { Client, SearchResponse, ShardsResponse } from 'elasticsearch'
 
-export interface DatasetIndex {
-  name: string,
-  tags: string[],
-  groups: string[],
-  organization: string,
-  resourceFormats: string[],
-  site: string,
-  mongo_id: string
-}
-
 interface DatasetSearchParams {
   query?: string,
   tags?: string,
@@ -31,15 +21,7 @@ export class ElasticSearchService {
     const esReturn = await this.esclient.index({
       index: 'datasets',
       id: dataset.unique_name,
-      body: {
-        name: dataset.name,
-        tags: dataset.tags,
-        groups: dataset.groups.map(group => group.name),
-        organization: dataset.organization?.name,
-        resourceFormats: [...new Set(dataset.resources.map(resource => resource.format))],
-        site: dataset.site_name,
-        mongo_id: dataset.mongo_id
-      }
+      body: this.filterDataset(dataset)
     })
 
     if (!['created', 'updated'].includes(esReturn.result)) {
@@ -49,14 +31,26 @@ export class ElasticSearchService {
     return esReturn
   }
 
-  async search(searchTerms: DatasetSearchParams): Promise<SearchResponse<DatasetIndex>> {
+  filterDataset(dataset: DatasetDto): DatasetDto {
+    delete dataset.organization?.description
+    dataset.groups = dataset.groups.map(group => {
+      return {
+        name: group.name,
+        image_url: group.image_url
+      }
+    })
+    this.logger.log(dataset.organization, 'dataset.organization')
+    return dataset
+  }
+
+  async search(searchTerms: DatasetSearchParams): Promise<SearchResponse<DatasetDto>> {
     const organization = searchTerms.organizations || ''
     const tags = searchTerms.tags || ''
     const groups = searchTerms.groups || ''
     const sites = searchTerms.sites || ''
     const resourceFormats = searchTerms.resourceFormats || ''
 
-    const esResponse =  await this.esclient.search<DatasetIndex>({
+    const esResponse =  await this.esclient.search<DatasetDto>({
       index: 'datasets',
       body: { query: { bool: { should: [
         {
@@ -79,7 +73,7 @@ export class ElasticSearchService {
   async clearES(): Promise<void>{
     await this.esclient.indices.delete({
       index: 'datasets'
-    })
+    }).catch(err => this.logger.error(err))
 
     const esIndiceExistis = await this.esIndiceExistis()
 
@@ -96,29 +90,56 @@ export class ElasticSearchService {
               type: 'text',
               analyzer: 'portuguese'
             },
+            description: {
+              type: 'keyword'
+            },
+            organization: {
+              properties: {
+                name: {
+                  type: 'text',
+                  analyzer: 'portuguese'
+                },
+                image_url: { type: 'keyword' }
+              }
+            },
             tags: {
               type: 'text',
               analyzer: 'portuguese'
             },
+            aditionalInfo: {
+              type: 'object',
+              enabled: false
+            },
+            resources: {
+              properties: {
+                name: {
+                  type: 'text',
+                  analyzer: 'portuguese'
+                },
+                description: { type: 'keyword' },
+                url: { type: 'keyword' },
+                type: { type: 'keyword' },
+                format: { type: 'text' },
+                created_at: { type: 'long' },
+                updated_at: { type: 'long' }
+              }
+            },
+            sourceUrl: { type: 'keyword' },
             groups: {
+              properties: {
+                name: {
+                  type: 'text',
+                  analyzer: 'portuguese'
+                },
+                image_url: { type: 'keyword' }
+              }
+            },
+            site_name: { type: 'keyword' },
+            site_display_name: {
               type: 'text',
               analyzer: 'portuguese'
             },
-            organization: {
-              type: 'text',
-              analyzer: 'portuguese'
-            },
-            resourceFormats: {
-              type: 'text',
-              analyzer: 'portuguese'
-            },
-            site: {
-              type: 'text',
-              analyzer: 'portuguese'
-            },
-            mongo_id: {
-              type: 'keyword',
-            }
+            mongo_id: { type: 'keyword' }
           }
         }
       }

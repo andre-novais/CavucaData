@@ -33,11 +33,12 @@ export class DatasetsService {
   }
 
   async listDatasets(): Promise<Dataset[]> {
-    return await this.Dataset.find({}).exec()
+    return await this.Dataset.find({}).limit(20).exec()
   }
 
   async listFilterOptionsByCategory(category: CategoryStrings): Promise<string[]> {
     const query: string[] = await this.Dataset.find({}).select(category).distinct(category).exec()
+    this.logger.log({query})
     const queryElemsAreArrays = Array.isArray(query[0])
     if (queryElemsAreArrays) {
       const filterOptions: string[] = []
@@ -49,7 +50,7 @@ export class DatasetsService {
   }
 
   async listDatasetsByFilter(filter: Record<string, string>): Promise<Dataset[]> {
-    return await this.Dataset.find(filter).exec()
+    return await this.Dataset.find(filter).limit(20).exec()
   }
 
   async findDownloadUrl(id: string, resource_index: number): Promise<string> {
@@ -78,7 +79,7 @@ export class DatasetsService {
     }
 
     dataset.mongo_id = savedDataset._id
-    await this.elasticSearchService.indexDataset(dataset)
+    await this.elasticSearchService.indexDataset(dataset).catch( err => this.logger.error({err}) )
 
     return savedDataset
   }
@@ -103,5 +104,9 @@ export class DatasetsService {
 
   async countDatasets(): Promise<number> {
     return await this.Dataset.countDocuments()
+  }
+
+  async test(): Promise<any> {
+    return await this.Dataset.find({})
   }
 }

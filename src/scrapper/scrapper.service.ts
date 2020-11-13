@@ -10,8 +10,8 @@ export class ScrapperService {
   constructor(private readonly datasetsService: DatasetsService) {}
 
   startScrapping(): string {
-    return 'scrapping process started'
     this.scrappe().catch((err) => err)
+    return 'scrapping process started'
   }
 
   async scrappe(): Promise<void> {

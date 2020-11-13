@@ -76,7 +76,7 @@ class CkanScrapper {
         name: data.title,
         description: data.notes,
         organization: this.getOrganization(data),
-        tags: data.tags.map(tag => tag.display_name.toLocaleLowerCase()),
+        tags: data.tags.map(tag => tag.display_name.toLowerCase()),
         groups: data.groups.map(group => {
           return {
             name: group.title,
@@ -89,7 +89,7 @@ class CkanScrapper {
             name: resource.name,
             description: resource.description,
             url: resource.url,
-            format: resource.format,
+            format: resource.format.toLowerCase(),
             type: resource.resource_type,
             created_at: +(new Date(resource.created)),
             updated_at: +(new Date(resource.last_modified))
