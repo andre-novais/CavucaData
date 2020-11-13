@@ -3,6 +3,7 @@ import { Dataset, DatasetDto } from './dataset.schema'
 import { Model } from 'mongoose'
 import { InjectModel } from '@nestjs/mongoose'
 import { ElasticSearchService } from './elasticsearch.service'
+import { PaginationParams } from './datasets.controller'
 
 enum FilterCategories {
   site_name,
@@ -10,8 +11,11 @@ enum FilterCategories {
   groups,
   organization
 }
-
 type CategoryStrings = keyof typeof FilterCategories
+
+interface FilterParams {
+  filter: Record<string, string>
+}
 
 @Injectable()
 export class DatasetsService {
@@ -32,8 +36,11 @@ export class DatasetsService {
     return await this.Dataset.findById(id).exec()
   }
 
-  async listDatasets(): Promise<Dataset[]> {
-    return await this.Dataset.find({}).limit(20).exec()
+  async listDatasets(params: PaginationParams): Promise<Dataset[]> {
+    const limit = params.pagination.limit
+    const offset = params.pagination.offset
+
+    return await this.Dataset.find({}).skip(offset).limit(limit).exec()
   }
 
   async listFilterOptionsByCategory(category: CategoryStrings): Promise<string[]> {
@@ -49,8 +56,12 @@ export class DatasetsService {
     } else return query
   }
 
-  async listDatasetsByFilter(filter: Record<string, string>): Promise<Dataset[]> {
-    return await this.Dataset.find(filter).limit(20).exec()
+  async listDatasetsByFilter(params: PaginationParams & FilterParams): Promise<Dataset[]> {
+    const filter = params.filter
+    const limit = params.pagination.limit
+    const offset = params.pagination.offset
+
+    return await this.Dataset.find(filter).skip(offset).limit(limit).exec()
   }
 
   async findDownloadUrl(id: string, resource_index: number): Promise<string> {

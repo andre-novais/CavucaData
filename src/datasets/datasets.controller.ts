@@ -1,9 +1,28 @@
-import { Controller, Get, Res, Logger } from '@nestjs/common'
+import { Controller, Get, Res, Logger, createParamDecorator, ExecutionContext } from '@nestjs/common'
+import { Param, ParseIntPipe, Body } from '@nestjs/common'
 import { DatasetsService } from './datasets.service'
 import { ElasticSearchService } from './elasticsearch.service'
 import { Dataset, DatasetDto } from './dataset.schema'
-import { Param, ParseIntPipe, Query } from '@nestjs/common'
 import { Response } from 'express'
+
+const Paginated = createParamDecorator(
+  (_data: unknown, ctx: ExecutionContext) => {
+    const request = ctx.switchToHttp().getRequest()
+    const limit = request.body.limit
+    const offset = request.body.offset
+
+    return { limit, offset }
+  }
+)
+
+export interface PaginationParams {
+  pagination: {
+    limit: number,
+    offset: number
+  }
+}
+
+type Pagination = PaginationParams['pagination']
 
 @Controller('datasets')
 export class DatasetsController {
@@ -15,8 +34,10 @@ export class DatasetsController {
     ) {}
 
   @Get()
-  async listDatasets(): Promise<Dataset[]> {
-    return await this.datasetsService.listDatasets()
+  async listDatasets(
+    @Paginated() pagination: Pagination
+  ): Promise<Dataset[]> {
+    return await this.datasetsService.listDatasets({ pagination })
   }
 
   @Get('sites')
@@ -25,8 +46,12 @@ export class DatasetsController {
   }
 
   @Get('sites/:site_name')
-  async listDatasetsBySite(@Param('site_name') site_name: string): Promise<Dataset[]> {
-    return await this.datasetsService.listDatasetsByFilter({site_name})
+  async listDatasetsBySite(
+    @Param('site_name') site_name: string,
+    @Paginated() pagination: Pagination
+): Promise<Dataset[]> {
+  const filter = { site_name }
+    return await this.datasetsService.listDatasetsByFilter({ filter, pagination })
   }
 
   @Get('tags')
@@ -35,8 +60,12 @@ export class DatasetsController {
   }
 
   @Get('tags/:tag')
-  async listDatasetsByTag(@Param('tag') tag: string): Promise<Dataset[]> {
-    return await this.datasetsService.listDatasetsByFilter({ 'tags': tag })
+  async listDatasetsByTag(
+    @Param('tag') tag: string,
+    @Paginated() pagination: Pagination
+): Promise<Dataset[]> {
+  const filter = { 'tags': tag }
+    return await this.datasetsService.listDatasetsByFilter({ filter, pagination })
   }
 
   @Get('groups')
@@ -45,8 +74,12 @@ export class DatasetsController {
   }
 
   @Get('groups/:group')
-  async listDatasetsByGroup(@Param('group') group: string): Promise<Dataset[]> {
-    return await this.datasetsService.listDatasetsByFilter({ 'groups': group })
+  async listDatasetsByGroup(
+    @Param('group') group: string,
+    @Paginated() pagination: Pagination
+): Promise<Dataset[]> {
+  const filter = { 'groups': group }
+    return await this.datasetsService.listDatasetsByFilter({ filter, pagination })
   }
 
   @Get('organizations')
@@ -55,20 +88,26 @@ export class DatasetsController {
   }
 
   @Get('organizations/:organization')
-  async listDatasetsByOrganization(@Param('organization') organization: string): Promise<Dataset[]> {
-    return await this.datasetsService.listDatasetsByFilter({organization})
+  async listDatasetsByOrganization(
+    @Param('organization') organization: string,
+    @Paginated() pagination: Pagination
+): Promise<Dataset[]> {
+    const filter = { organization }
+    return await this.datasetsService.listDatasetsByFilter({ filter, pagination })
   }
 
   @Get('search')
   async elasticSearch(
-    @Query('q') query: string,
-    @Query('tags') tags: string,
-    @Query('organizations') organizations: string,
-    @Query('groups') groups: string,
-    @Query('sites') sites: string,
-    @Query('formats') resourceFormats: string
+    @Body('q') query: string,
+    @Body('tags') tags: string,
+    @Body('organizations') organizations: string,
+    @Body('groups') groups: string,
+    @Body('sites') sites: string,
+    @Body('formats') resourceFormats: string,
+    @Paginated() pagination: Pagination
   ): Promise<DatasetDto[]> {
-    const searchTerms = {
+    this.logger.log({query})
+    const searchParams = {
       query,
       tags,
       organizations,
@@ -76,7 +115,8 @@ export class DatasetsController {
       sites,
       resourceFormats
     }
-    const esResponse = await this.elasticSearchService.search(searchTerms)
+
+    const esResponse = await this.elasticSearchService.search({ searchParams, pagination })
     return esResponse.hits.hits.map(esIndex => esIndex._source)
   }
 

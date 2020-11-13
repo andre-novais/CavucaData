@@ -1,14 +1,18 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { DatasetDto } from './dataset.schema'
 import { Client, SearchResponse, ShardsResponse } from 'elasticsearch'
+import { PaginationParams } from './datasets.controller'
+//import { _ } from 'lodash'
 
 interface DatasetSearchParams {
-  query?: string,
-  tags?: string,
-  organizations?: string,
-  groups?: string,
-  sites?: string,
-  resourceFormats?: string
+  searchParams: {
+    query?: string,
+    tags?: string,
+    organizations?: string,
+    groups?: string,
+    sites?: string,
+    resourceFormats?: string
+  }
 }
 
 
@@ -43,19 +47,21 @@ export class ElasticSearchService {
     return dataset
   }
 
-  async search(searchTerms: DatasetSearchParams): Promise<SearchResponse<DatasetDto>> {
-    const organization = searchTerms.organizations || ''
-    const tags = searchTerms.tags || ''
-    const groups = searchTerms.groups || ''
-    const sites = searchTerms.sites || ''
-    const resourceFormats = searchTerms.resourceFormats || ''
+  async search(params: DatasetSearchParams & PaginationParams): Promise<SearchResponse<DatasetDto>> {
+    const query = params.searchParams.query || ''
+    const organization = params.searchParams.organizations || ''
+    const tags = params.searchParams.tags || ''
+    const groups = params.searchParams.groups || ''
+    const sites = params.searchParams.sites || ''
+    const resourceFormats = params.searchParams.resourceFormats || ''
+    this.logger.log(params.searchParams.query, 'params.searchParams.query')
 
     const esResponse =  await this.esclient.search<DatasetDto>({
       index: 'datasets',
       body: { query: { bool: { should: [
         {
           simple_query_string: {
-            query: searchTerms.query,
+            query: query,
             all_fields: true
           }
         },
@@ -63,8 +69,10 @@ export class ElasticSearchService {
         { match: { tags: { query: tags } } },
         { match: { groups: { query: groups } } },
         { match: { site_name: { query: sites } } },
-        { match: { resourceFormats: { query: resourceFormats } } }
-      ]}}}
+        { match: { "resources.format": { query: resourceFormats } } }
+      ]}}},
+      size: params.pagination.limit,
+      from: params.pagination.offset
     })
 
     return esResponse
