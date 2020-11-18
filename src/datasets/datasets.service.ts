@@ -6,9 +6,9 @@ import { ElasticSearchService } from './elasticsearch.service'
 import { PaginationParams } from './datasets.controller'
 
 enum FilterCategories {
-  site_name,
   tags,
-  organization
+  organization,
+  site_display_name
 }
 type CategoryStrings = keyof typeof FilterCategories
 
@@ -19,11 +19,6 @@ interface FilterParams {
 @Injectable()
 export class DatasetsService {
   private readonly logger = new Logger(DatasetsService.name)
-  public readonly filterCategories = {
-    sites: 'site_name',
-    tags: 'tags',
-    organizations: 'organizations'
-  }
 
   constructor(
     @InjectModel('datasets') private Dataset: Model<Dataset>,

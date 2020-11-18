@@ -42,15 +42,15 @@ export class DatasetsController {
 
   @Get('sites')
   async listSites(): Promise<string[]> {
-    return await this.datasetsService.listFilterOptionsByCategory('site_name')
+    return await this.datasetsService.listFilterOptionsByCategory('site_display_name')
   }
 
-  @Get('sites/:site_name')
+  @Get('sites/:site_display_name')
   async listDatasetsBySite(
-    @Param('site_name') site_name: string,
+    @Param('site_display_name') site_display_name: string,
     @Paginated() pagination: Pagination
 ): Promise<Dataset[]> {
-  const filter = { site_name }
+  const filter = { site_display_name }
     return await this.datasetsService.listDatasetsByFilter({ filter, pagination })
   }
 
@@ -117,7 +117,9 @@ export class DatasetsController {
 
   @Get('test')
   async test(): Promise<any> {
-    return await this.datasetsService.test()
+    const filter = { 'site_display_name': 'Governo Federal'}
+    const pagination: Pagination = {limit: 0, offset: 0}
+    return await this.datasetsService.listDatasetsByFilter({filter, pagination} )
   }
 
   @Get(':id')
