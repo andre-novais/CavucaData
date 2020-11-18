@@ -78,7 +78,7 @@ export class DatasetsController {
     @Param('organization') organization: string,
     @Paginated() pagination: Pagination
 ): Promise<Dataset[]> {
-    const filter = { organization }
+    const filter = { 'organization.name': organization }
     return await this.datasetsService.listDatasetsByFilter({ filter, pagination })
   }
 

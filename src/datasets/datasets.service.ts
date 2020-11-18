@@ -42,8 +42,9 @@ export class DatasetsService {
   }
 
   async listFilterOptionsByCategory(category: CategoryStrings): Promise<string[]> {
-    const query: string[] = await this.Dataset.find({}).select(category).distinct(category).exec()
+    const query: any[] = await this.Dataset.find({}).select(category).distinct(category).exec()
     this.logger.log({query})
+
     const queryElemsAreArrays = Array.isArray(query[0])
     if (queryElemsAreArrays) {
       const filterOptions: string[] = []
@@ -51,13 +52,24 @@ export class DatasetsService {
         filterOptions.concat(options)
       }
       return filterOptions
-    } else return query
+    }
+
+    const queryElemsAreObjects = typeof query[0] === 'object' && query[0] !== null
+    if (queryElemsAreObjects) {
+      const filterOptions = query.map(object => {
+        return object.name
+      })
+      return filterOptions
+    }
+
+    return query
   }
 
   async listDatasetsByFilter(params: PaginationParams & FilterParams): Promise<Dataset[]> {
     const filter = params.filter
     const limit = params.pagination.limit
     const offset = params.pagination.offset
+    this.logger.log({params})
 
     return await this.Dataset.find(filter).skip(offset).limit(limit).exec()
   }
@@ -116,6 +128,6 @@ export class DatasetsService {
   }
 
   async test(): Promise<any> {
-    return await this.Dataset.find({})
+    return await this.Dataset.find({ 'organization.name': 'BELOTUR' } ).exec()
   }
 }
