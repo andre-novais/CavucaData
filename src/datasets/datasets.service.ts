@@ -8,7 +8,6 @@ import { PaginationParams } from './datasets.controller'
 enum FilterCategories {
   site_name,
   tags,
-  groups,
   organization
 }
 type CategoryStrings = keyof typeof FilterCategories
@@ -23,7 +22,6 @@ export class DatasetsService {
   public readonly filterCategories = {
     sites: 'site_name',
     tags: 'tags',
-    groups: 'groups',
     organizations: 'organizations'
   }
 

@@ -20,11 +20,6 @@ export interface DatasetDto {
     updated_at: number
   }[],
   sourceUrl: string,
-  groups: {
-    name: string,
-    description?: string,
-    image_url: string
-  }[],
   unique_name: string,
   site_name: string,
   site_display_name: string,
@@ -47,7 +42,6 @@ export const DatasetSchema = new Schema({
     required: true
   },
   sourceUrl: String,
-  groups: [Object],
   unique_name: {
     type: String,
     unique: true,

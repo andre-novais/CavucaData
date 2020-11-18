@@ -9,7 +9,6 @@ interface DatasetSearchParams {
     query?: string,
     tags?: string,
     organizations?: string,
-    groups?: string,
     sites?: string,
     resourceFormats?: string
   }
@@ -37,13 +36,6 @@ export class ElasticSearchService {
 
   filterDataset(dataset: DatasetDto): DatasetDto {
     delete dataset.organization?.description
-    dataset.groups = dataset.groups.map(group => {
-      return {
-        name: group.name,
-        image_url: group.image_url
-      }
-    })
-    this.logger.log(dataset.organization, 'dataset.organization')
     return dataset
   }
 
@@ -51,7 +43,6 @@ export class ElasticSearchService {
     const query = params.searchParams.query || ''
     const organization = params.searchParams.organizations || ''
     const tags = params.searchParams.tags || ''
-    const groups = params.searchParams.groups || ''
     const sites = params.searchParams.sites || ''
     const resourceFormats = params.searchParams.resourceFormats || ''
     this.logger.log(params.searchParams.query, 'params.searchParams.query')
@@ -67,7 +58,6 @@ export class ElasticSearchService {
         },
         { match: { organization: { query: organization } } },
         { match: { tags: { query: tags } } },
-        { match: { groups: { query: groups } } },
         { match: { site_name: { query: sites } } },
         { match: { "resources.format": { query: resourceFormats } } }
       ]}}},
@@ -133,15 +123,6 @@ export class ElasticSearchService {
               }
             },
             sourceUrl: { type: 'keyword' },
-            groups: {
-              properties: {
-                name: {
-                  type: 'text',
-                  analyzer: 'portuguese'
-                },
-                image_url: { type: 'keyword' }
-              }
-            },
             site_name: { type: 'keyword' },
             site_display_name: {
               type: 'text',

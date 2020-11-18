@@ -68,20 +68,6 @@ export class DatasetsController {
     return await this.datasetsService.listDatasetsByFilter({ filter, pagination })
   }
 
-  @Get('groups')
-  async listGroups(): Promise<string[]> {
-    return await this.datasetsService.listFilterOptionsByCategory('groups')
-  }
-
-  @Get('groups/:group')
-  async listDatasetsByGroup(
-    @Param('group') group: string,
-    @Paginated() pagination: Pagination
-): Promise<Dataset[]> {
-  const filter = { 'groups': group }
-    return await this.datasetsService.listDatasetsByFilter({ filter, pagination })
-  }
-
   @Get('organizations')
   async listOrganizations(): Promise<string[]> {
     return await this.datasetsService.listFilterOptionsByCategory('organization')
@@ -101,7 +87,6 @@ export class DatasetsController {
     @Query('q') query: string,
     @Query('tags') tags: string,
     @Query('organizations') organizations: string,
-    @Query('groups') groups: string,
     @Query('sites') sites: string,
     @Query('formats') resourceFormats: string,
     @Paginated() pagination: Pagination
@@ -111,7 +96,6 @@ export class DatasetsController {
       query,
       tags,
       organizations,
-      groups,
       sites,
       resourceFormats
     }

@@ -30,11 +30,7 @@ interface CkanDataset {
   extras: Record<string, string>[]
 }
 
-interface Organization {
-  name: string,
-  description: string,
-  image_url: string
-}
+type Organization = DatasetDto['organization']
 
 class CkanScrapper {
   _config: SiteConfig
@@ -76,14 +72,7 @@ class CkanScrapper {
         name: data.title,
         description: data.notes,
         organization: this.getOrganization(data),
-        tags: data.tags.map(tag => tag.display_name.toLowerCase()),
-        groups: data.groups.map(group => {
-          return {
-            name: group.title,
-            description: group.description,
-            image_url: this._config.image_base_url + group.image_display_url
-          }
-        }),
+        tags: this.getTags(data),
         resources: data.resources.map(resource => {
           return {
             name: resource.name,
@@ -113,6 +102,15 @@ class CkanScrapper {
         description: data.organization.description,
         image_url: this._config.image_base_url + data.organization.image_url
       }
+    }
+
+    getTags(data: CkanDataset): string[] {
+      const tags = data.tags.map(tag => tag.display_name.toLowerCase())
+      data.groups.forEach(group => {
+        tags.push(group.title.toLowerCase())
+      })
+
+      return tags
     }
 
     getAditionalInfo(data: CkanDataset): Record<string, string> {
