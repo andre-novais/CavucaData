@@ -1,5 +1,5 @@
 import { Controller, Get, Res, Logger, createParamDecorator, ExecutionContext } from '@nestjs/common'
-import { Param, ParseIntPipe, Body } from '@nestjs/common'
+import { Param, ParseIntPipe, Query } from '@nestjs/common'
 import { DatasetsService } from './datasets.service'
 import { ElasticSearchService } from './elasticsearch.service'
 import { Dataset, DatasetDto } from './dataset.schema'
@@ -8,8 +8,8 @@ import { Response } from 'express'
 const Paginated = createParamDecorator(
   (_data: unknown, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest()
-    const limit = request.body.limit
-    const offset = request.body.offset
+    const limit = parseInt(request.query.limit)
+    const offset = parseInt(request.query.offset)
 
     return { limit, offset }
   }
@@ -98,12 +98,12 @@ export class DatasetsController {
 
   @Get('search')
   async elasticSearch(
-    @Body('q') query: string,
-    @Body('tags') tags: string,
-    @Body('organizations') organizations: string,
-    @Body('groups') groups: string,
-    @Body('sites') sites: string,
-    @Body('formats') resourceFormats: string,
+    @Query('q') query: string,
+    @Query('tags') tags: string,
+    @Query('organizations') organizations: string,
+    @Query('groups') groups: string,
+    @Query('sites') sites: string,
+    @Query('formats') resourceFormats: string,
     @Paginated() pagination: Pagination
   ): Promise<DatasetDto[]> {
     this.logger.log({query})
