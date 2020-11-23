@@ -58,6 +58,8 @@ class CkanScrapper {
       numRows = datasets.length
       iterCount++
 
+      console.log({site_name: this._config.site_name, url, numRows})
+
       for (const dataset of this._datasets) {
         yield dataset.title
       }
@@ -65,33 +67,40 @@ class CkanScrapper {
   }
 
     async getDataset(title: string): Promise<DatasetDto | null> {
+      console.log({title})
       const data = this._datasets.find(dataset => dataset.title == title)
       if(!data) { return null }
 
-      const dataset = {
-        name: data.title,
-        description: data.notes,
-        organization: this.getOrganization(data),
-        tags: this.getTags(data),
-        resources: data.resources.map(resource => {
-          return {
-            name: resource.name,
-            description: resource.description,
-            url: resource.url,
-            format: resource.format.toLowerCase(),
-            type: resource.resource_type,
-            created_at: +(new Date(resource.created)),
-            updated_at: +(new Date(resource.last_modified))
-          }
-        }),
-        sourceUrl: `${this._config.base_url}/dataset/${data.name}`,
-        unique_name: this._config.site_name + data.title.replace(/ /gi, '_'),
-        aditionalInfo: this.getAditionalInfo(data),
-        site_name: this._config.site_name,
-        site_display_name: this._config.site_display_name
+      try {
+        const dataset = {
+          name: data.title,
+          description: data.notes,
+          organization: this.getOrganization(data),
+          tags: this.getTags(data),
+          resources: data.resources.map(resource => {
+            return {
+              name: resource.name,
+              description: resource.description,
+              url: resource.url,
+              format: resource.format.toLowerCase(),
+              type: resource.resource_type,
+              created_at: +(new Date(resource.created)),
+              updated_at: +(new Date(resource.last_modified))
+            }
+          }),
+          sourceUrl: `${this._config.base_url}/dataset/${data.name}`,
+          unique_name: this._config.site_name + data.title.replace(/ /gi, '_'),
+          aditionalInfo: this.getAditionalInfo(data),
+          site_name: this._config.site_name,
+          site_display_name: this._config.site_display_name
+        }
+
+        return dataset
+      } catch (err) {
+        console.log({err})
+        return null
       }
 
-      return dataset
     }
 
     getOrganization(data: CkanDataset): Organization | undefined {
