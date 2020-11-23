@@ -34,12 +34,12 @@ export class ElasticSearchService {
     return esReturn
   }
 
-  filterDataset(dataset: DatasetDto): DatasetDto {
+  filterDataset(dataset: DatasetDto): any {
     delete dataset.organization?.description
     return dataset
   }
 
-  async search(params: DatasetSearchParams & PaginationParams): Promise<SearchResponse<DatasetDto>> {
+  async search(params: DatasetSearchParams & PaginationParams): Promise<SearchResponse<any>> {
     const query = params.searchParams.query || ''
     const organization = params.searchParams.organizations || ''
     const tags = params.searchParams.tags || ''
@@ -47,7 +47,7 @@ export class ElasticSearchService {
     const resourceFormats = params.searchParams.resourceFormats || ''
     this.logger.log(params.searchParams.query, 'params.searchParams.query')
 
-    const esResponse =  await this.esclient.search<DatasetDto>({
+    const esResponse =  await this.esclient.search<any>({
       index: 'datasets',
       body: { query: { bool: { should: [
         {
