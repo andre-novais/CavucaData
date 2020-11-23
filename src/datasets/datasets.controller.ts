@@ -101,7 +101,7 @@ export class DatasetsController {
     }
 
     const esResponse = await this.elasticSearchService.search({ searchParams, pagination })
-    return esResponse.hits.hits.map(esIndex => esIndex._source)
+    return esResponse.hits.hits.map((esIndex: any) => esIndex._source)
   }
 
   @Get('clearDb')
