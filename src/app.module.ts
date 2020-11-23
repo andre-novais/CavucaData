@@ -7,7 +7,7 @@ import { ScrapperModule } from './scrapper/scrapper.module'
 
 @Module({
   imports: [
-    MongooseModule.forRoot(`mongodb+srv://hordor:${process.env.MONGO_PWD}@cluster0.ji2jv.mongodb.net/datasets?retryWrites=true&w=majority`, {
+    MongooseModule.forRoot(`${process.env.MONGO_URL}`, {
       connectionName: 'datasets'
     }),
     DatasetsModule,
