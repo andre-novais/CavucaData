@@ -1,8 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { DatasetDto } from './dataset.schema'
-import { Client, SearchResponse, ShardsResponse } from 'elasticsearch'
+//import { Client, SearchResponse, ShardsResponse } from 'elasticsearch'
 import { PaginationParams } from './datasets.controller'
-//import { _ } from 'lodash'
+
+const Client = require('elasticsearch').Client
 
 interface DatasetSearchParams {
   searchParams: {
@@ -20,7 +21,7 @@ export class ElasticSearchService {
   private readonly logger = new Logger(ElasticSearchService.name)
   private readonly esclient = new Client({ host: process.env['ES_URL'] })
 
-  async indexDataset(dataset: DatasetDto): Promise<ShardsResponse> {
+  async indexDataset(dataset: DatasetDto): Promise<any> {
     const esReturn = await this.esclient.index({
       index: 'datasets',
       id: dataset.unique_name,
@@ -34,12 +35,12 @@ export class ElasticSearchService {
     return esReturn
   }
 
-  filterDataset(dataset: DatasetDto): any {
+  filterDataset(dataset: DatasetDto): DatasetDto {
     delete dataset.organization?.description
     return dataset
   }
 
-  async search(params: DatasetSearchParams & PaginationParams): Promise<SearchResponse<any>> {
+  async search(params: DatasetSearchParams & PaginationParams): Promise<any> {
     const query = params.searchParams.query || ''
     const organization = params.searchParams.organizations || ''
     const tags = params.searchParams.tags || ''
@@ -47,7 +48,7 @@ export class ElasticSearchService {
     const resourceFormats = params.searchParams.resourceFormats || ''
     this.logger.log(params.searchParams.query, 'params.searchParams.query')
 
-    const esResponse =  await this.esclient.search<any>({
+    const esResponse =  await this.esclient.search({
       index: 'datasets',
       body: { query: { bool: { should: [
         {
@@ -71,7 +72,7 @@ export class ElasticSearchService {
   async clearES(): Promise<void>{
     await this.esclient.indices.delete({
       index: 'datasets'
-    }).catch(err => this.logger.error(err))
+    }).catch((err: any) => this.logger.error(err))
 
     const esIndiceExistis = await this.esIndiceExistis()
 
